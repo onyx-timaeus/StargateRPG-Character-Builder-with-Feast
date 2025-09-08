@@ -62,9 +62,10 @@
             class: '',
             level: 1,
             classFeats: [],
-            generalFeats: [], // Add general feats selection
-            totalMP: 0, // Total Mission Points earned
-            spentMP: 0, // Mission Points spent on feats
+            generalFeats: [],
+            bonusFeats: [],
+            totalMP: 0,
+            spentMP: 0,
             abilityScoreImprovements: {},
             abilityScores: {
                 strength: 10,
@@ -90,165 +91,49 @@
             }
         });
 
-        // Complete feat database
+        // State for feat category selection
+        const [selectedFeatCategory, setSelectedFeatCategory] = useState('general');
+
+        // Complete feat database (simplified for testing)
         const featCategories = {
-            inspiration: {
-                name: "Inspiration Feats",
-                description: "Team support abilities that enhance allies through the Inspire ability. Most desired by Diplomats.",
-                classRestricted: "Diplomat",
-                feats: [
-                    { name: 'Calm and Collected', mpCost: 5, requirements: ['Inspire ability'], description: 'During a long rest, choose Intelligence, Wisdom, or Charisma. Inspired characters gain advantage on the chosen save until your next long rest.' },
-                    { name: 'Clear Focus', mpCost: 5, requirements: ['Inspire ability'], description: 'During a long rest, choose a skill in which you are proficient. Inspired characters gain advantage on the chosen skill until your next long rest.' },
-                    { name: 'Coordinated Fire', mpCost: 5, requirements: ['Inspire ability'], description: 'After you hit a target with an attack, you may take a bonus action to grant an inspired character advantage to their next attack roll made before your next turn against the same target.' },
-                    { name: 'Defensive Motivation', mpCost: 5, requirements: ['Inspire ability'], description: 'Inspired characters gain +1 AC.' },
-                    { name: 'Enduring Inspirations', mpCost: 5, requirements: ['Inspire ability'], description: 'At the beginning of combat, each inspired character gains a number of Inspire HP equal to a roll of the tension die.' },
-                    { name: 'Grim Resolve', mpCost: 5, requirements: ['Inspire ability'], description: 'When an inspired character loses their last Inspire HP, they gain resistance to bludgeoning, piercing, and slashing damage until their next turn.' },
-                    { name: 'Hard Day\'s Night', mpCost: 5, requirements: ['Inspire ability'], description: 'Inspired characters reduce any exhaustion damage they suffer from environmental effects or exertion by 1 level (minimum 1 level).' },
-                    { name: 'Quippy Comebacks', mpCost: 5, requirements: ['Inspire ability'], description: 'Once per Diplomatic Function, inspired characters may halve the amount of DP lost as a result of a failed Diplomatic Action check.' },
-                    { name: 'Skillful Explanations', mpCost: 5, requirements: ['Inspire ability'], description: 'Once per short rest, when an inspired character fails a skill check that you are proficient in, you may allow the character to re-roll the result.' }
-                ]
-            },
-            modification: {
-                name: "Modification Feats", 
-                description: "Equipment enhancement abilities that improve team gear. Most desired by Engineers.",
-                classRestricted: "Engineer",
-                feats: [
-                    { name: 'Armorer', mpCost: 5, requirements: ['Jury Rig ability'], description: 'During a long rest, you may choose one character\'s armor. It gains +1 AC until your next long rest. Can be taken multiple times.' },
-                    { name: 'Chem Thrower', mpCost: 5, requirements: ['Jury Rig ability'], description: 'During a long rest you may choose one weapon with the line or cone quality. It gains +5m to its range until your next long rest.' },
-                    { name: 'Comms Tech', mpCost: 5, requirements: ['Jury Rig ability'], description: 'Your team\'s tactical radio equipment has a range of 20km (instead of 5km). Communications balloon duration increases to 15d6 hours.' },
-                    { name: 'Grenadier', mpCost: 5, requirements: ['Jury Rig ability'], description: 'Grenades from your kit deal +1d6 damage when used by you. Can be taken multiple times for additional +1d6 damage.' },
-                    { name: 'Longarm Calibrations', mpCost: 5, requirements: ['Jury Rig ability'], description: 'During a long rest you may choose one character\'s Longarm. It gains a +1d4 to attack rolls against targets at long range until your next long rest.' },
-                    { name: 'Minefield Expert', mpCost: 5, requirements: ['Jury Rig ability', 'Explosives'], description: 'You can bury explosives as mines (DC 20 Perception to spot). You gain advantage on all Perception checks to spot buried mines.' },
-                    { name: 'Montage', mpCost: 5, requirements: ['Jury Rig ability'], description: 'During an episode R&D encounter, reduce the number of successes required by half your Proficiency bonus, to a minimum of 1.' },
-                    { name: 'Percussive Maintenance', mpCost: 5, requirements: ['Jury Rig ability'], description: 'When a vehicle you are embarked within has the damaged condition, you can take an action to ignore the damaged condition for a number of rounds equal to a roll of the tension die.' },
-                    { name: 'Sidearm Calibrations', mpCost: 5, requirements: ['Jury Rig ability'], description: 'During a long rest you may choose one character\'s sidearm. It provides a +1d4 to attack rolls against targets at short range until your next long rest.' }
-                ]
-            },
-            procedure: {
-                name: "Procedure Feats",
-                description: "Medical abilities that provide special team benefits and healing options. Most desired by Medics.",
-                classRestricted: "Medic",
-                feats: [
-                    { name: 'Biohazard Disposal', mpCost: 5, requirements: ['First Aid ability'], description: 'You and your team are considered proficient in Constitution saves against diseases, toxins, and viruses.' },
-                    { name: 'Controlled Stimulants', mpCost: 5, requirements: ['First Aid ability'], description: 'As an action, you may use your Med Kit to heal 1d4 levels of exhaustion. A character may not benefit from this ability again until they have taken a long rest.' },
-                    { name: 'Crash Training', mpCost: 5, requirements: ['First Aid ability'], description: 'You may use a Med Kit to revive a character who has been dead for a number of rounds up to your Proficiency bonus with a successful DC 25 Medicine check.' },
-                    { name: 'Embolism', mpCost: 5, requirements: ['First Aid ability'], description: 'You may use your Med Kit to make a melee attack that deals 1d3 Constitution damage.' },
-                    { name: 'Improvised Medicine', mpCost: 5, requirements: ['First Aid ability'], description: 'When you do not have a Med Kit, you may still heal friendly targets as if you had a Med Kit but were not proficient with it.' },
-                    { name: 'Pharmaceuticals', mpCost: 5, requirements: ['First Aid ability'], description: 'You may use your Med Kit to heal a character of 1d4 Intelligence, Wisdom, or Charisma damage during a short rest.' },
-                    { name: 'Sedatives', mpCost: 5, requirements: ['First Aid ability'], description: 'You may administer a sedative to a living target as a melee attack. Target must make a Constitution save or suffer 1d6 levels of fatigue.' },
-                    { name: 'Urgent Care', mpCost: 5, requirements: ['First Aid ability'], description: 'When you heal with a Med Kit, you may choose to replace all the healing dice rolled with the same number of Tension Dice.' },
-                    { name: 'Vital Organ Trauma', mpCost: 5, requirements: ['First Aid ability'], description: 'When you critically hit, add your Wisdom modifier to the damage dealt.' }
-                ]
-            },
-            discovery: {
-                name: "Discovery Feats",
-                description: "Scientific abilities that enhance Eureka point usage and research capabilities. Most desired by Scientists.",
-                classRestricted: "Scientist", 
-                feats: [
-                    { name: 'A Moment\'s Thought', mpCost: 5, requirements: ['Eureka ability'], description: 'Whenever you take a short or long rest you may spend a Eureka point to re-roll an Intelligence or Wisdom skill check to learn information that you failed since your last rest.' },
-                    { name: 'Archaeologist', mpCost: 5, requirements: ['Eureka ability', 'Culture'], description: 'As an action you can spend a Eureka point to automatically locate any secret chambers or otherwise hidden rooms within a structure no larger than 20m square per Proficiency bonus.' },
-                    { name: 'Astronomer', mpCost: 5, requirements: ['Eureka ability', 'Science'], description: 'As a bonus action you may reduce the time it takes to activate an astronomical device (including a Stargate) by 1 round per Eureka point spent.' },
-                    { name: 'Biologist', mpCost: 5, requirements: ['Eureka ability', 'Medicine'], description: 'As an action you may spend any number of Eureka points to heal yourself or a character within 1m for 1d6 damage per Eureka point spent.' },
-                    { name: 'Chemist', mpCost: 5, requirements: ['Eureka ability', 'Science'], description: 'As an action you may use your Research Kit to make a ranged attack against a target within 5m. Deal 1d6 acid damage per Eureka point spent (scales with level).' },
-                    { name: 'Geologist', mpCost: 5, requirements: ['Eureka ability', 'Science'], description: 'When a friendly character within 5m makes an attack against a target in natural cover, you may make a reaction and spend a Eureka point to negate the effects of that cover.' },
-                    { name: 'Hyper-Focus', mpCost: 5, requirements: ['Eureka ability'], description: 'You may spend one Eureka point to add the tension die to an Intelligence or Wisdom check. You may declare this use after learning the results of the roll.' },
-                    { name: 'Physicist', mpCost: 5, requirements: ['Eureka ability', 'Science'], description: 'When you make an attack with a ranged weapon, you may spend a Eureka to increase the weapon\'s range by half (+50%).' },
-                    { name: 'Social Sciences', mpCost: 5, requirements: ['Eureka ability', 'Culture'], description: 'Whenever you lose any number of wagered Determination Points, you gain one Eureka point.' }
-                ]
-            },
-            fieldhack: {
-                name: "Field Hack Feats",
-                description: "Survival and wilderness abilities for operating in hostile environments. Most desired by Scouts.",
-                classRestricted: "Scout",
-                feats: [
-                    { name: 'Camp Security', mpCost: 5, requirements: ['Survivalist ability', 'Perception'], description: 'Your adept site preparation provides advantage on any Perception checks to notice approaching creatures while taking a short or long rest.' },
-                    { name: 'Camouflage', mpCost: 5, requirements: ['Survivalist ability', 'Stealth'], description: 'Using elements of the natural environment, you grant your team advantage on Stealth checks after a short or long rest in an environment.' },
-                    { name: 'Foraging', mpCost: 5, requirements: ['Survivalist ability', 'Stealth'], description: 'When in a natural environment you can feed a number of people up to your Proficiency bonus with a single hard (DC 20) Survival check and 1d4 hours of work.' },
-                    { name: 'Hide Tracks', mpCost: 5, requirements: ['Survivalist ability', 'Stealth'], description: 'You travel in back of your team, hiding your tracks. Raise the DC to track your party by your Proficiency bonus or to DC 20, whichever yields a higher DC.' },
-                    { name: 'Ranger Tricks', mpCost: 5, requirements: ['Survivalist ability'], description: 'During a Traversal encounter, if you succeed at a Terrain card\'s Navigation check, you navigate an additional 1d3 cards from the Journey deck instead of 1.' },
-                    { name: 'Ration Optimization', mpCost: 5, requirements: ['Survivalist ability'], description: 'By managing your team\'s rations and preparing meals with clever use of ingredients, you can keep spirits high. Your team members heal 1 DP during a short rest.' },
-                    { name: 'Rope Tricks', mpCost: 5, requirements: ['Survivalist ability', 'Stealth'], description: 'Your expert knots and efficient use of rope allow your entire team to benefit from your Climbing Kit.' },
-                    { name: 'Tracking', mpCost: 5, requirements: ['Survivalist ability', 'Perception'], description: 'You gain advantage on all Survival checks made to track.' },
-                    { name: 'Xenosurvival', mpCost: 5, requirements: ['Constitution 13+', 'Survivalist ability'], description: 'Once you have taken a short or long rest in an environment, choose a number of additional characters up to your Proficiency bonus to benefit from your Survivalist ability while in the environment until your next rest.' }
-                ]
-            },
-            tactic: {
-                name: "Tactic Feats",
-                description: "Combat coordination abilities that enhance team combat effectiveness. Most desired by Soldiers.",
-                classRestricted: "Soldier",
-                feats: [
-                    { name: 'Ambush', mpCost: 5, requirements: ['Tactical Flexibility ability'], description: 'You and your team members gain advantage on your first melee attack after any short or long rest.' },
-                    { name: 'Assault Coordination', mpCost: 5, requirements: ['Tactical Flexibility ability'], description: 'When you hit a target with a ranged attack, the next successful ranged attack by one of your team members deals +1d6 damage.' },
-                    { name: 'Coordinated Response', mpCost: 5, requirements: ['Tactical Flexibility ability'], description: 'When rolling for initiative, your team members may choose (before the rolls are made) to use your initiative result instead of their own.' },
-                    { name: 'Defensive Posture', mpCost: 5, requirements: ['Tactical Flexibility ability'], description: 'Add +2 AC to other team members within 2m of you.' },
-                    { name: 'Distracting Attacks', mpCost: 5, requirements: ['Tactical Flexibility ability'], description: 'When you deal damage to a single target with an attack, you may choose one friendly character not within 2m of you. The target suffers disadvantage on all attacks against the chosen character until the start of your next turn.' },
-                    { name: 'Hit & Run', mpCost: 5, requirements: ['Tactical Flexibility ability'], description: 'As a bonus action on your turn you may allow a team member to take a Disengage action.' },
-                    { name: 'Overwatchers', mpCost: 5, requirements: ['Tactical Flexibility ability'], description: 'During a firefight, when you and your team members take the Overwatch action you cover a 90° field instead of a 45° cone. You may make two Overwatch attacks.' },
-                    { name: 'Response Shot', mpCost: 5, requirements: ['Tactical Flexibility ability'], description: 'Once per encounter, you may use your reaction to make a ranged attack against an enemy who makes an attack against a team member other than yourself.' },
-                    { name: 'Rush', mpCost: 5, requirements: ['Tactical Flexibility ability'], description: 'As a bonus action on your turn you may allow a team member to take a Dash action.' }
-                ]
-            },
             general: {
                 name: "General Feats",
                 description: "Broad abilities available to all characters, covering various aspects of character development.",
-                classRestricted: null,
                 feats: [
                     { name: 'Ability Score Increase', mpCost: 7, requirements: [], description: 'An ability score of your choice is increased by +1. No ability score can be raised above 20 this way.' },
                     { name: 'Advanced Training: Diplomat', mpCost: 9, requirements: ['Charisma 13+', 'Persuasion'], description: 'You gain the Diplomat\'s Inspire ability.' },
                     { name: 'Advanced Training: Engineer', mpCost: 9, requirements: ['Intelligence 13+', 'Engineering'], description: 'You gain the Engineer\'s Jury Rig ability.' },
-                    { name: 'Advanced Training: Medic', mpCost: 9, requirements: ['Wisdom 13+', 'Medicine'], description: 'You gain the Medic\'s First Aid ability.' },
-                    { name: 'Advanced Training: Scientist', mpCost: 9, requirements: ['Intelligence 13+', 'Science'], description: 'You gain the Scientist\'s Eureka ability.' },
-                    { name: 'Advanced Training: Scout', mpCost: 9, requirements: ['Constitution 13+', 'Survival'], description: 'You gain the Scout\'s Survivalist ability.' },
-                    { name: 'Advanced Training: Soldier', mpCost: 9, requirements: ['Constitution 13+', 'Intimidation'], description: 'You gain the Soldier\'s Tactical Flexibility ability.' },
                     { name: 'Airborne School', mpCost: 3, requirements: ['Athletics'], description: 'You gain resistance to falling damage. You gain advantage on any check to open a parachute at altitudes below 1km.' },
-                    { name: 'Apt Analogy', mpCost: 5, requirements: ['Science'], description: 'You can employ an easy to understand analogy to help others work through complex or esoteric problems. Once per short rest you may grant a friendly character a +TD bonus on an Intelligence or Wisdom skill check.' },
-                    { name: 'Battlefield Medicine', mpCost: 6, requirements: ['Med Kit proficiency'], description: 'When you use a Med Kit to heal a target during a rest, they also heal 1 point of Strength, Dexterity, or Constitution damage in addition to the HP damage healed.' },
-                    { name: 'Casual Genius', mpCost: 6, requirements: ['Eureka ability'], description: 'You begin each mission with a number of Eureka points equal to half your Proficiency Bonus (rounding down).' },
-                    { name: 'Chaplain School', mpCost: 3, requirements: ['Insight'], description: 'During a Convince encounter, you do not automatically fail on a roll of 1, and you do not increase the threshold.' },
-                    { name: 'Convincing', mpCost: 5, requirements: ['Charisma 13+'], description: 'When you succeed on a Persuasion check, you may immediately make another Persuasion check against a different character who witnessed your success.' },
-                    { name: 'Cross-Discipline Study', mpCost: 5, requirements: ['Intelligence 13+'], description: 'You add half your Proficiency bonus to skill checks for skills in which you are not proficient.' },
-                    { name: 'De-escalate', mpCost: 5, requirements: ['Wisdom 13+'], description: 'During a Convince encounter, when you succeed on a Persuasion check you may reduce the threshold by an additional 1 point.' },
-                    { name: 'Determined', mpCost: 3, requirements: [], description: 'You increase your base Determination Points by +1. This feat may be purchased a number of times equal to your Proficiency bonus.' },
-                    { name: 'Dive School', mpCost: 3, requirements: ['Athletics'], description: 'You can hold your breath for a number of minutes equal to your Constitution modifier (minimum 1) before making Constitution saves.' },
-                    { name: 'Escalate', mpCost: 5, requirements: ['Charisma 13+'], description: 'During a Convince encounter, when you fail a Persuasion check you may increase the threshold by an additional 1 point to immediately make another Persuasion check.' },
-                    { name: 'Fighter Ace', mpCost: 5, requirements: ['Dexterity 13+', 'Pilot'], description: 'You gain advantage on Pilot checks when in aerial combat.' },
-                    { name: 'First Response', mpCost: 5, requirements: ['First Aid ability'], description: 'Add your Wisdom modifier to the amount healed whenever you heal a character using first aid.' },
-                    { name: 'Force of Will', mpCost: 6, requirements: ['Inspire ability'], description: 'You may use your Inspire ability during a short rest in addition to a long rest.' },
-                    { name: 'For Science!', mpCost: 6, requirements: ['Eureka ability'], description: 'You may use your Charisma modifier instead of your Intelligence modifier when spending Eureka points.' }
+                    { name: 'Determined', mpCost: 3, requirements: [], description: 'You increase your base Determination Points by +1. This feat may be purchased multiple times.' }
                 ]
             },
             combat: {
                 name: "Combat Feats",
                 description: "Specialized combat abilities that enhance fighting effectiveness in various situations.",
-                classRestricted: null,
                 feats: [
-                    { name: 'Attack Specialist', mpCost: 4, requirements: ['Level 5'], description: 'Choose one weapon proficiency. When making attacks with that proficiency you roll twice as many weapon damage dice as normal. (Level requirement)' },
-                    { name: 'Attack Veteran', mpCost: 4, requirements: ['Level 11', 'Attack Specialist'], description: 'Choose one weapon proficiency you have Attack Specialist for. You now roll triple damage dice instead of double. (Level requirement)' },
-                    { name: 'Attack Ace', mpCost: 4, requirements: ['Level 17', 'Attack Veteran'], description: 'Choose one weapon proficiency you have Attack Veteran for. You now roll quadruple damage dice instead of triple. (Level requirement)' },
-                    { name: 'Co-ordinated Attack', mpCost: 7, requirements: [], description: 'When you make an attack against a target who is within 1m of one or more of your allies, you deal +TD damage.' },
+                    { name: 'Attack Specialist', mpCost: 4, requirements: ['Level 5'], description: 'Choose one weapon proficiency. When making attacks with that proficiency you roll twice as many weapon damage dice as normal.' },
+                    { name: 'Attack Veteran', mpCost: 4, requirements: ['Level 11', 'Attack Specialist'], description: 'Choose one weapon proficiency you have Attack Specialist for. You now roll triple damage dice instead of double.' },
+                    { name: 'Attack Ace', mpCost: 4, requirements: ['Level 17', 'Attack Veteran'], description: 'Choose one weapon proficiency you have Attack Veteran for. You now roll quadruple damage dice instead of triple.' },
                     { name: 'Critical Focus', mpCost: 5, requirements: ['Proficient with chosen weapon'], description: 'Choose a weapon proficiency. When you score a critical hit with that type of weapon, add your Proficiency bonus to the damage dealt.' },
-                    { name: 'Critical Effect', mpCost: 9, requirements: ['Critical Focus'], description: 'Choose Blinded, Deafened, or Stunned. When you deal additional damage with the Critical Focus feat you apply the chosen effect to the target for a number of rounds equal to your Proficiency bonus.' },
-                    { name: 'Die Hard', mpCost: 3, requirements: ['Constitution 13+'], description: 'You require 1 fewer successful saves to avoid dying. If you reduce the number of required saves to 0 you automatically stabilize. (Can be taken up to 3 times, cost increases)' },
                     { name: 'Dodge', mpCost: 5, requirements: ['Dexterity 13+'], description: 'You add +1 to your AC when wearing light or no armor.' }
                 ]
             },
-            downtime: {
-                name: "Downtime Feats",
-                description: "Abilities that enhance downtime activities and facility bonuses during rest periods.",
-                classRestricted: null,
+            inspiration: {
+                name: "Inspiration Feats",
+                description: "Team support abilities that enhance allies through the Inspire ability. Most desired by Diplomats.",
                 feats: [
-                    { name: 'Armory Hound', mpCost: 7, requirements: ['Explosives', 'Longarms', 'Sidearms'], description: 'When you spend your downtime in the armory, you may apply the Armory bonus to a team member in addition to yourself. Can be taken multiple times.' },
-                    { name: 'Artist', mpCost: 3, requirements: [], description: 'You can spend your downtime making art and improving the livability of your surroundings. Choose one facility and improve its effective Facility bonus by +1 (to a maximum of +5) during this mission.' },
-                    { name: 'Athlete', mpCost: 3, requirements: ['Acrobatics or Athletics'], description: 'When you spend time in the gym, you also add its Facility bonus to your melee attack rolls.' },
-                    { name: 'Bookworm', mpCost: 7, requirements: ['Eureka ability'], description: 'When you spend your downtime in the ASH Archive, you begin each mission with additional Eureka points equal to half the Facility bonus (up to your max, minimum 1).' },
-                    { name: 'Cinefile', mpCost: 3, requirements: ['Culture'], description: 'When you spend downtime in the Rec Hall you may choose a Wisdom skill instead of a Charisma skill to gain its Facility bonus.' },
-                    { name: 'Cookie', mpCost: 7, requirements: [], description: 'When you spend your downtime in the Mess Hall, you may apply the Mess Hall bonus to a team member in addition to yourself. Can be taken multiple times.' },
-                    { name: 'Gamer', mpCost: 3, requirements: [], description: 'When you spend your downtime gaming you may choose to add the Facility bonus of the Mess Hall to your Charisma and Wisdom saves or the Facility bonus of the Rec Hall to your Intelligence and Wisdom saves.' },
-                    { name: 'Party Animal', mpCost: 5, requirements: [], description: 'If you spend your downtime partying you may choose to begin a mission with 1 level of exhaustion. If you do, you do not suffer disadvantage on any checks caused by exhaustion during the mission.' },
-                    { name: 'Sawbones', mpCost: 7, requirements: ['Medicine'], description: 'When you spend your downtime in the Medical Bay, you may apply the Medical Bay bonus to a team member in addition to yourself. Can be taken multiple times.' },
-                    { name: 'Sport Shooter', mpCost: 3, requirements: ['Sidearms or Longarms'], description: 'When you spend downtime on the Firing Range you may choose to add its Facility bonus to either your ranged attack rolls or your AC.' },
-                    { name: 'Tread Head', mpCost: 7, requirements: ['Pilot'], description: 'When you spend your downtime in the Motor Pool, you may apply the Motor Pool bonus to a team member in addition to yourself. Can be taken multiple times.' },
-                    { name: 'Virtuoso', mpCost: 3, requirements: ['Performance'], description: 'When you spend downtime in the Rec Hall you may choose an Intelligence skill instead of a Charisma skill to gain its Facility bonus.' }
+                    { name: 'Calm and Collected', mpCost: 5, requirements: ['Inspire ability'], description: 'During a long rest, choose Intelligence, Wisdom, or Charisma. Inspired characters gain advantage on the chosen save until your next long rest.' },
+                    { name: 'Clear Focus', mpCost: 5, requirements: ['Inspire ability'], description: 'During a long rest, choose a skill in which you are proficient. Inspired characters gain advantage on the chosen skill until your next long rest.' },
+                    { name: 'Defensive Motivation', mpCost: 5, requirements: ['Inspire ability'], description: 'Inspired characters gain +1 AC.' }
+                ]
+            },
+            modification: {
+                name: "Modification Feats", 
+                description: "Equipment enhancement abilities that improve team gear. Most desired by Engineers.",
+                feats: [
+                    { name: 'Armorer', mpCost: 5, requirements: ['Jury Rig ability'], description: 'During a long rest, you may choose one character\'s armor. It gains +1 AC until your next long rest. Can be taken multiple times.' },
+                    { name: 'Grenadier', mpCost: 5, requirements: ['Jury Rig ability'], description: 'Grenades from your kit deal +1d6 damage when used by you. Can be taken multiple times for additional +1d6 damage.' },
+                    { name: 'Comms Tech', mpCost: 5, requirements: ['Jury Rig ability'], description: 'Your team\'s tactical radio equipment has a range of 20km (instead of 5km). Communications balloon duration increases to 15d6 hours.' }
                 ]
             }
         };
@@ -326,91 +211,6 @@
                         }
                     }
                 }
-            },
-            'Aturen': {
-                subraces: {
-                    'Standard Aturen': {
-                        hitPoints: 10,
-                        abilityIncrease: { type: 'choice', options: ['wisdom', 'charisma'], value: 2 },
-                        abilities: [
-                            'Natural Resilience: Advantage on saves against disease or poison',
-                            'Naturalist: Add +TD to Science checks involving ecosystems and creatures'
-                        ],
-                        proficiencies: {
-                            skills: { type: 'choice', count: 2, options: 'any' }
-                        }
-                    },
-                    'Noxian Pacifist': {
-                        hitPoints: 8,
-                        abilityIncrease: { type: 'choice', options: ['constitution', 'charisma'], value: 2 },
-                        abilities: [
-                            'Pacifist: Cannot willingly harm living creatures or take attack actions',
-                            'Invisibility: Become invisible for 1 minute as action (Prof bonus times per long rest)',
-                            'Natural Resilience: Advantage on saves against disease or poison',
-                            'Naturalist: Add +TD to Science checks involving ecosystems and creatures'
-                        ],
-                        proficiencies: {
-                            skills: { type: 'choice', count: 2, options: 'any' }
-                        }
-                    }
-                }
-            },
-            'Tok\'ra': {
-                subraces: {
-                    'Tok\'ra (Egeria\'s Line)': {
-                        hitPoints: 10,
-                        abilityIncrease: { type: 'choice', options: ['intelligence', 'wisdom'], value: 2 },
-                        abilities: [
-                            'Synergistic Symbiote: Advantage on mental saves (once per Wis mod per long rest)',
-                            'Regeneration: Heal to full HP during long rest',
-                            'Genetic Memory: Access to centuries of knowledge',
-                            'Naquadah in blood: Can use Goa\'uld/Tok\'ra technology'
-                        ],
-                        proficiencies: {
-                            skills: { type: 'choice', count: 2, options: 'any' }
-                        }
-                    },
-                    'Pangaran Tok\'ra': {
-                        hitPoints: 10,
-                        abilityIncrease: { type: 'choice', options: ['charisma', 'wisdom'], value: 2 },
-                        abilities: [
-                            'Shrewd Diplomats: Use Int or Wis instead of Cha for Persuasion',
-                            'Regeneration: Heal to full HP during long rest',
-                            'No genetic memory (created with flaw)'
-                        ],
-                        proficiencies: {
-                            skills: { type: 'choice', count: 2, options: 'any' }
-                        }
-                    }
-                }
-            },
-            'Unas': {
-                subraces: {
-                    'Standard Unas': {
-                        hitPoints: 14,
-                        abilityIncrease: { type: 'choice', options: ['strength', 'constitution'], value: 2 },
-                        abilities: [
-                            'Impressive Resilience: Gain damage resistance for TD rounds (once per long rest)',
-                            'Robust: +4 Str for lifting/carrying, advantage on related Str checks',
-                            'Claws: Natural weapons deal 1d6 damage'
-                        ],
-                        proficiencies: {
-                            skills: { type: 'choice', count: 2, options: 'any' }
-                        }
-                    },
-                    'Unchained Unas': {
-                        hitPoints: 14,
-                        abilityIncrease: { type: 'choice', options: ['strength', 'constitution'], value: 2 },
-                        abilities: [
-                            'Impressive Resilience: Gain damage resistance for TD rounds (once per long rest)',
-                            'Underestimated: Advantage on checks to conceal truth from non-Unas',
-                            'Claws: Natural weapons deal 1d6 damage'
-                        ],
-                        proficiencies: {
-                            skills: { type: 'choice', count: 2, options: 'any' }
-                        }
-                    }
-                }
             }
         };
 
@@ -435,12 +235,6 @@
                     descriptions.push(`Choose ${proficiencies.weapons.count} weapon proficiency`);
                 } else if (proficiencies.weapons.type === 'fixed') {
                     descriptions.push(`${proficiencies.weapons.list.join(', ')} (fixed)`);
-                }
-            }
-
-            if (proficiencies?.armor) {
-                if (proficiencies.armor.type === 'fixed') {
-                    descriptions.push(`${proficiencies.armor.list.join(', ')} (fixed)`);
                 }
             }
 
@@ -496,74 +290,6 @@
                     3: { type: 'modification', count: 1 },
                     5: { type: 'modification', count: 1 }
                 }
-            },
-            'Medic': {
-                hitDie: 8,
-                hpPerLevel: 5,
-                determinationBonus: 2,
-                proficiencies: {
-                    armor: ['Light Armor'],
-                    weapons: ['Common Weapons', 'Sidearms', 'Shotguns'],
-                    tools: ['Med Kit', 'Outbreak Kit'],
-                    saves: ['Dexterity', 'Wisdom'],
-                    skills: ['Athletics', 'Insight', 'Medicine', 'Science']
-                },
-                abilities: {
-                    1: ['First Aid (add proficiency to healing, heal as action)', 'Choose Procedure feat'],
-                    2: ['Triage (learn target HP with Medicine check)', 'Unnoticed Field Medic (disadvantage on attacks after healing)'],
-                    3: ['Man Down (dying allies need fewer death saves)', 'Choose 2nd Procedure feat'],
-                    4: ['Physician Heal Thyself (use med kit on self as bonus action)', 'Ability Score Improvement'],
-                    5: ['First Response (add WIS modifier to healing)', 'Choose 3rd Procedure feat']
-                },
-                featChoices: {
-                    1: { type: 'procedure', count: 1 },
-                    3: { type: 'procedure', count: 1 },
-                    5: { type: 'procedure', count: 1 }
-                }
-            },
-            'Scientist': {
-                hitDie: 8,
-                hpPerLevel: 5,
-                determinationBonus: 2,
-                proficiencies: {
-                    armor: ['Light Armor'],
-                    weapons: ['Common Weapons', 'Sidearms'],
-                    tools: ['Explosives', 'Research Kit', 'Translator'],
-                    saves: ['Intelligence', 'Wisdom'],
-                    skills: ['Culture', 'Investigation', 'Nature', 'Science']
-                },
-                abilities: {
-                    1: ['Eureka (gain points on Int/Wis failures)', 'Choose Discovery feat'],
-                    2: ['Apt Analogy (+TD to ally checks)', 'Great Mind (immune to charm, advantage vs lies)'],
-                    3: ['Cross-discipline Studies (half prof to non-proficient)', 'Choose 2nd Discovery feat'],
-                    4: ['Resilient Mind (reduce mental damage)', 'Ability Score Improvement'],
-                    5: ['Casual Genius (start with Eureka points)', 'For Science! (Eureka for Cha)', 'Choose 3rd Discovery feat']
-                },
-                featChoices: {
-                    1: { type: 'discovery', count: 1 },
-                    3: { type: 'discovery', count: 1 },
-                    5: { type: 'discovery', count: 1 }
-                }
-            },
-            'Scout': {
-                hitDie: 8,
-                hpPerLevel: 5,
-                determinationBonus: 2,
-                proficiencies: {
-                    armor: ['Light Armor'],
-                    weapons: ['Common Weapons', 'Sidearms', 'Longarms', 'Shotguns', 'Sniper Rifles'],
-                    tools: ['Camo Kit'],
-                    saves: ['Dexterity', 'Wisdom'],
-                    skills: { choose: 4, from: ['Acrobatics', 'Animal Handling', 'Athletics', 'Investigation', 'Nature', 'Perception', 'Sleight of Hand', 'Stealth', 'Survival'] }
-                },
-                abilities: {
-                    1: ['Hunter\'s Quarry (mark target for +1d6 damage)', 'Sneak Attack (+1d6 damage with advantage)'],
-                    2: ['Swift Hunter (hide as bonus action from quarry)', 'Expertise (double proficiency for 2 skills)'],
-                    3: ['Uncanny Dodge (reaction for resistance)', 'Scout\'s Cunning (bonus action dash/disengage/hide)'],
-                    4: ['Ability Score Improvement'],
-                    5: ['Evasion (half damage on Dex saves)']
-                },
-                featChoices: {}
             },
             'Soldier': {
                 hitDie: 10,
@@ -643,23 +369,7 @@
                 { name: 'Entertainer', proficiency: 'Performance', ability: 'Zeitgeist: Use Cha for art/performance understanding' },
                 { name: 'Freedom Fighter', proficiency: 'Stealth', ability: 'Last Resorts: Disadvantage on Moxie, advantage on Initiative' },
                 { name: 'Healer', proficiency: 'Medicine', ability: 'Soothe: Team heals +Prof bonus on rest' },
-                { name: 'Military', proficiency: { type: 'choice', options: ['Weapon', 'Armor'] }, ability: 'Drills: +1 HP per level' },
-                { name: 'Herdsman', proficiency: 'Animal Handling', ability: 'Beastfriend: Use Cha instead of Wis for Animal Handling' },
-                { name: 'Preservationist', proficiency: 'Nature', ability: 'Eye for Nature: Advantage on checks to identify plants' },
-                { name: 'Hunter/Gatherer', proficiency: 'Survival', ability: 'Irongut: Advantage vs poison' },
-                { name: 'Politician', proficiency: 'Persuasion', ability: 'Two Faces: Use Int instead of Cha for Deception' },
-                { name: 'Liaison', proficiency: 'Culture', ability: 'Stranger to the Land: Advantage on Cha checks to hide foreign nature' },
-                { name: 'Refugee', proficiency: 'Athletics', ability: 'New Environments: Advantage on Athletics in unknown wilderness' },
-                { name: 'Merchant', proficiency: 'Insight', ability: 'Efficient Logistics: +1 bulk capacity' },
-                { name: 'Sailor', proficiency: 'Acrobatics', ability: 'Sea Legs: Advantage to maintain balance' },
-                { name: 'Swindler', proficiency: 'Deception', ability: 'Low Profile: Use Deception for Stealth in populated areas' },
-                { name: 'Scholar', proficiency: 'Science', ability: 'Preserve Knowledge: Advantage on Persuasion with scholars' },
-                { name: 'Teacher', proficiency: 'Insight', ability: 'Patient Approach: 1/mission use Wis save instead of another' },
-                { name: 'Sentry', proficiency: 'Perception', ability: 'Long Night: Ignore first night without rest' },
-                { name: 'Wright', proficiency: 'Engineering', ability: 'Measure Twice: Half prof bonus on non-proficient tools' },
-                { name: 'Sleuth', proficiency: 'Investigation', ability: 'The Reveal: Advantage on Persuasion to accuse wrongdoing' },
-                { name: 'Underworld', proficiency: 'Sleight of Hand', ability: 'Black Market: Advantage contacting underworld members' },
-                { name: 'Student', proficiency: 'Perception', ability: 'Quick Study: 1/mission use Int save instead of another' }
+                { name: 'Military', proficiency: { type: 'choice', options: ['Weapon', 'Armor'] }, ability: 'Drills: +1 HP per level' }
             ],
             racial: {
                 'Human': [
@@ -668,15 +378,6 @@
                 'Jaffa': [
                     { name: 'Jaffa Renegade', attribute: 'Wisdom +1', ability: 'Rebel: Advantage on saves vs Goa\'uld and Jaffa' },
                     { name: 'Student of Bra\'tac', attribute: 'Dexterity +1', ability: 'Ma\'tok Mastery: Ma\'tok gains finesse property' }
-                ],
-                'Aturen': [
-                    { name: 'Aturen Spiritualist', attribute: 'None', ability: 'Ritual of Life: DC 20 Culture check to resurrect' }
-                ],
-                'Tok\'ra': [
-                    { name: 'Tok\'ra Spy', attribute: 'Charisma +1', ability: 'Passing: Advantage on Deception as Human/Goa\'uld/Jaffa' }
-                ],
-                'Unas': [
-                    { name: 'Unas Alpha', attribute: 'Charisma +1', ability: 'Clan Leader: Other Unas gain advantage on saves/attacks' }
                 ]
             }
         };
@@ -848,17 +549,13 @@
             };
         };
 
-        // Calculate Mission Points (MP)
+        // FIXED: Calculate Mission Points (MP) - Simple formula: (level-5) * 10
         const calculateMP = () => {
-            if (character.level <= 5) return { total: 0, available: 0 };
+            if (character.level <= 5) return { total: 0, available: 0, spent: 0 };
             
-            let totalMP = 0;
-            for (let level = 6; level <= character.level; level++) {
-                totalMP += (level - 5) * 10; // Level 6 = 10, Level 7 = 20, etc.
-            }
+            const totalMP = (character.level - 5) * 10;
             
             const spentMP = character.generalFeats.reduce((sum, featName) => {
-                // Find feat cost across all categories
                 for (const category of Object.values(featCategories)) {
                     const feat = category.feats.find(f => f.name === featName);
                     if (feat) return sum + feat.mpCost;
@@ -873,6 +570,15 @@
             };
         };
 
+        // Get automatic bonus feats based on level
+        const getBonusFeats = () => {
+            const bonusFeats = [];
+            if (character.level >= 5) bonusFeats.push('Attack Specialist');
+            if (character.level >= 11) bonusFeats.push('Attack Veteran'); 
+            if (character.level >= 17) bonusFeats.push('Attack Ace');
+            return bonusFeats;
+        };
+
         // Check feat requirements
         const checkFeatRequirements = (feat) => {
             const finalScores = getFinalAbilityScores();
@@ -881,25 +587,19 @@
             for (const requirement of feat.requirements) {
                 let isMet = false;
 
-                // Check ability score requirements (e.g., "Dexterity 13+")
                 if (requirement.includes('13+')) {
                     const ability = requirement.replace(' 13+', '').toLowerCase();
                     if (finalScores[ability] && finalScores[ability] >= 13) {
                         isMet = true;
                     }
-                }
-                // Check level requirements
-                else if (requirement.includes('Level')) {
+                } else if (requirement.includes('Level')) {
                     const requiredLevel = parseInt(requirement.replace('Level ', ''));
                     if (character.level >= requiredLevel) {
                         isMet = true;
                     }
-                }
-                // Check class abilities
-                else if (requirement.includes('ability')) {
+                } else if (requirement.includes('ability')) {
                     if (character.class) {
                         const classData = classes[character.class];
-                        // Check if the class has this ability at current level
                         for (let level = 1; level <= character.level; level++) {
                             if (classData.abilities[level]) {
                                 if (classData.abilities[level].some(ability => ability.includes(requirement.replace(' ability', '')))) {
@@ -909,18 +609,9 @@
                             }
                         }
                     }
-                }
-                // Check skill/tool proficiencies
-                else if (availableSkills.includes(requirement) || availableTools.includes(requirement) || availableWeapons.includes(requirement)) {
-                    // For now, assume they meet skill requirements if they selected the class that gets them
+                } else if (availableSkills.includes(requirement) || availableTools.includes(requirement) || availableWeapons.includes(requirement)) {
                     isMet = true;
-                }
-                // Check other feats
-                else if (feat.requirements.includes(requirement) && character.generalFeats.includes(requirement)) {
-                    isMet = true;
-                }
-                // No requirements
-                else if (feat.requirements.length === 0) {
+                } else if (feat.requirements.length === 0) {
                     isMet = true;
                 }
 
@@ -957,7 +648,6 @@
             const classData = classes[character.class];
             if (!classData.featChoices) return null;
 
-            // Get the feat type from the first feat choice
             const firstChoice = Object.values(classData.featChoices)[0];
             return firstChoice ? firstChoice.type : null;
         };
@@ -971,13 +661,13 @@
             const intMod = getModifier(finalScores.intelligence);
             const chaMod = getModifier(finalScores.charisma);
 
-            // Check for speed modifications
             let speed = 6;
             if (character.origins.includes('Grasslands')) {
-                speed = 7; // +1m from Natural Sprinter
+                speed = 7;
             }
 
             const mpData = calculateMP();
+            const bonusFeats = getBonusFeats();
 
             setCharacter(prev => ({
                 ...prev,
@@ -989,7 +679,8 @@
                 speed: speed,
                 determinationPoints: getDeterminationBreakdown().total,
                 totalMP: mpData.total,
-                spentMP: mpData.spent
+                spentMP: mpData.spent,
+                bonusFeats: bonusFeats
             }));
         }, [character.race, character.subrace, character.class, character.level, character.abilityScores, character.abilityChoice, character.origins, character.abilityScoreImprovements, character.generalFeats]);
 
@@ -1015,118 +706,6 @@
             }));
         };
 
-        // Export character sheet
-        const exportCharacterSheet = () => {
-            const raceData = races[character.race]?.subraces[character.subrace];
-            const classData = classes[character.class];
-            const finalScores = getFinalAbilityScores();
-            const mpData = calculateMP();
-
-            // Build feat list - UPDATED TO INCLUDE BONUS FEATS
-            let featList = '';
-            if (character.classFeats && character.classFeats.length > 0) {
-                character.classFeats.forEach((featName, idx) => {
-                    featList += `Class Feat ${idx + 1}: ${featName}\n`;
-                });
-            }
-            if (character.bonusFeats && character.bonusFeats.length > 0) {
-                character.bonusFeats.forEach((featName, idx) => {
-                    featList += `Bonus Feat ${idx + 1}: ${featName} (Automatic Level Bonus)\n`;
-                });
-            }
-            if (character.generalFeats && character.generalFeats.length > 0) {
-                character.generalFeats.forEach((featName, idx) => {
-                    // Find MP cost
-                    let mpCost = 0;
-                    for (const category of Object.values(featCategories)) {
-                        const feat = category.feats.find(f => f.name === featName);
-                        if (feat) {
-                            mpCost = feat.mpCost;
-                            break;
-                        }
-                    }
-                    featList += `General Feat ${idx + 1}: ${featName} (${mpCost} MP)\n`;
-                });
-            }
-
-            // Build ASI list
-            let asiList = '';
-            if (character.abilityScoreImprovements) {
-                Object.entries(character.abilityScoreImprovements).forEach(([key, value]) => {
-                    if (value) {
-                        asiList += `${key}: ${value}\n`;
-                    }
-                });
-            }
-
-            const sheet = `STARGATE RPG CHARACTER SHEET
-=============================
-Name: ${character.name || 'Unnamed Character'}
-Race: ${character.race} (${character.subrace})
-Origins: ${character.origins.join(', ')}
-Class: ${character.class}
-Level: ${character.level}
-
-${character.level > 5 ? `MISSION POINTS
-Total MP: ${mpData.total}
-Spent MP: ${mpData.spent}
-Available MP: ${mpData.available}
-` : ''}
-ABILITY SCORES (with racial modifiers)
-Strength:     ${finalScores.strength} (${getModifier(finalScores.strength) >= 0 ? '+' : ''}${getModifier(finalScores.strength)})
-Dexterity:    ${finalScores.dexterity} (${getModifier(finalScores.dexterity) >= 0 ? '+' : ''}${getModifier(finalScores.dexterity)})
-Constitution: ${finalScores.constitution} (${getModifier(finalScores.constitution) >= 0 ? '+' : ''}${getModifier(finalScores.constitution)})
-Intelligence: ${finalScores.intelligence} (${getModifier(finalScores.intelligence) >= 0 ? '+' : ''}${getModifier(finalScores.intelligence)})
-Wisdom:       ${finalScores.wisdom} (${getModifier(finalScores.wisdom) >= 0 ? '+' : ''}${getModifier(finalScores.wisdom)})
-Charisma:     ${finalScores.charisma} (${getModifier(finalScores.charisma) >= 0 ? '+' : ''}${getModifier(finalScores.charisma)})
-
-COMBAT STATS
-Hit Points: ${character.hp}/${character.maxHp}
-Armor Class: ${character.armorClass}
-Initiative: ${character.initiative >= 0 ? '+' : ''}${character.initiative}
-Speed: ${character.speed}m
-Determination Points: ${character.determinationPoints}
-Moxie: ${character.moxie >= 0 ? '+' : ''}${character.moxie}
-
-PROFICIENCIES
-${classData ? 
-`Armor: ${classData.proficiencies.armor.join(', ')}
-Weapons: ${classData.proficiencies.weapons.join(', ')}
-Tools: ${classData.proficiencies.tools.join(', ')}
-Saves: ${classData.proficiencies.saves.join(', ')}
-Skills: ${Array.isArray(classData.proficiencies.skills) ? classData.proficiencies.skills.join(', ') : 'Choose ' + classData.proficiencies.skills.choose}` : 'None selected'}
-
-Additional Proficiencies from Race/Origins:
-${Object.entries(character.raceChoices).map(([key, val]) => `${key}: ${val}`).join('\n')}
-${Object.entries(character.originChoices).map(([key, val]) => `${key}: ${val}`).join('\n')}
-
-RACIAL ABILITIES
-${raceData ? raceData.abilities.join('\n') : 'None'}
-
-CLASS ABILITIES
-${classData ?
-Object.entries(classData.abilities)
-.filter(([lvl, _]) => parseInt(lvl) <= character.level)
-.map(([lvl, abilities]) => `Level ${lvl}: ${abilities.join(', ')}`)
-.join('\n') : ''}
-
-FEATS SELECTED
-${featList || 'None selected'}
-
-ABILITY SCORE IMPROVEMENTS
-${asiList || 'None selected'}
-`;
-
-            // Create and trigger download
-            const element = document.createElement('a');
-            const file = new Blob([sheet], { type: 'text/plain' });
-            element.href = URL.createObjectURL(file);
-            element.download = `${character.name || 'stargate_character'}_sheet.txt`;
-            document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
-        };
-
         // Check if we need ability choice
         const needsAbilityChoice = () => {
             const raceData = races[character.race]?.subraces[character.subrace];
@@ -1135,24 +714,20 @@ ${asiList || 'None selected'}
 
         // Check if all required choices are made
         const allChoicesMade = () => {
-            // Check race proficiency choices
             const raceData = races[character.race]?.subraces[character.subrace];
             if (raceData?.proficiencies) {
-                // Standard skill choices
                 if (raceData.proficiencies.skills?.type === 'choice') {
                     const required = raceData.proficiencies.skills.count;
                     const chosen = character.raceChoices.skills?.length || 0;
                     if (chosen < required) return false;
                 }
 
-                // Mixed type (Tollan) - fixed skills plus additional choices
                 if (raceData.proficiencies.skills?.type === 'mixed' && raceData.proficiencies.skills.additionalChoice) {
                     const required = raceData.proficiencies.skills.additionalChoice.count;
                     const chosen = character.raceChoices.additionalSkills?.length || 0;
                     if (chosen < required) return false;
                 }
                 
-                // Weapon choices
                 if (raceData.proficiencies.weapons?.type === 'choice') {
                     const required = raceData.proficiencies.weapons.count;
                     const chosen = character.raceChoices.weapons?.length || 0;
@@ -1160,7 +735,6 @@ ${asiList || 'None selected'}
                 }
             }
 
-            // Check origin choices
             for (const originName of character.origins) {
                 const backgroundOrigin = origins.background.find(o => o.name === originName);
                 if (backgroundOrigin?.proficiency?.type === 'choice' && !character.originChoices[originName]) {
@@ -1173,12 +747,10 @@ ${asiList || 'None selected'}
                 }
             }
 
-            // Check class feat choices
             const requiredFeats = getRequiredFeatCount();
             const selectedFeats = character.classFeats.length;
             if (selectedFeats < requiredFeats) return false;
 
-            // Check ASI choices at level 4
             if (character.level >= 4 && (!character.abilityScoreImprovements || Object.keys(character.abilityScoreImprovements).length === 0)) {
                 return false;
             }
@@ -1221,7 +793,7 @@ ${asiList || 'None selected'}
                                 <label className="block text-sm font-medium text-gray-300 mb-2">
                                     Select Race
                                 </label>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-2 gap-3">
                                     {Object.keys(races).map(race => (
                                         <button
                                             key={race}
@@ -1292,18 +864,6 @@ ${asiList || 'None selected'}
                                                             </span>
                                                         </div>
                                                         
-                                                        {/* Display proficiencies */}
-                                                        {proficiencyDesc.length > 0 && (
-                                                            <div className="mt-2">
-                                                                <span className="font-semibold text-gray-300">Proficiencies:</span>
-                                                                <ul className="ml-2 mt-1">
-                                                                    {proficiencyDesc.map((desc, idx) => (
-                                                                        <li key={idx} className="text-xs text-blue-300">• {desc}</li>
-                                                                    ))}
-                                                                </ul>
-                                                            </div>
-                                                        )}
-                                                        
                                                         <div className="mt-2">
                                                             <span className="font-semibold text-gray-300">Abilities:</span>
                                                             <ul className="ml-2 mt-1">
@@ -1330,11 +890,6 @@ ${asiList || 'None selected'}
                                             Choose ONE Ability Score Increase (+{races[character.race].subraces[character.subrace].abilityIncrease.value})
                                         </span>
                                     </label>
-                                    {!character.abilityChoice && (
-                                        <p className="text-xs text-yellow-200 mb-3">
-                                            ⚠️ You must select which ability score receives the racial bonus. Only ONE ability can be chosen.
-                                        </p>
-                                    )}
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                         {races[character.race].subraces[character.subrace].abilityIncrease.options.map(ability => (
                                             <button
@@ -1356,163 +911,7 @@ ${asiList || 'None selected'}
                                 </div>
                             )}
 
-                            {/* Race Proficiency Choices */}
-                            {character.race && character.subrace && (
-                                <>
-                                    {/* Standard Skills choice */}
-                                    {races[character.race]?.subraces[character.subrace]?.proficiencies?.skills?.type === 'choice' && (
-                                        <div className="bg-gray-700/50 rounded-lg p-4">
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                Choose {races[character.race].subraces[character.subrace].proficiencies.skills.count} Skill Proficienc{races[character.race].subraces[character.subrace].proficiencies.skills.count > 1 ? 'ies' : 'y'}
-                                            </label>
-                                            <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-                                                {availableSkills.map(skill => {
-                                                    const isSelected = character.raceChoices.skills?.includes(skill);
-                                                    const maxReached = (character.raceChoices.skills?.length || 0) >= races[character.race].subraces[character.subrace].proficiencies.skills.count;
-                                                    
-                                                    return (
-                                                        <button
-                                                            key={skill}
-                                                            onClick={() => {
-                                                                setCharacter(prev => {
-                                                                    const currentSkills = prev.raceChoices.skills || [];
-                                                                    let newSkills;
-                                                                    
-                                                                    if (isSelected) {
-                                                                        newSkills = currentSkills.filter(s => s !== skill);
-                                                                    } else if (!maxReached) {
-                                                                        newSkills = [...currentSkills, skill];
-                                                                    } else {
-                                                                        return prev;
-                                                                    }
-                                                                    
-                                                                    return {
-                                                                        ...prev,
-                                                                        raceChoices: {
-                                                                            ...prev.raceChoices,
-                                                                            skills: newSkills
-                                                                        }
-                                                                    };
-                                                                });
-                                                            }}
-                                                            disabled={!isSelected && maxReached}
-                                                            className={`p-2 rounded text-xs transition-all ${
-                                                                isSelected
-                                                                    ? 'bg-green-500/20 border border-green-500 text-white'
-                                                                    : 'bg-gray-800 border border-gray-600 text-gray-300 hover:border-gray-500 disabled:opacity-50'
-                                                            }`}
-                                                        >
-                                                            {skill}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Mixed type (Tollan) - shows fixed skills and additional choice */}
-                                    {races[character.race]?.subraces[character.subrace]?.proficiencies?.skills?.type === 'mixed' && (
-                                        <div className="bg-gray-700/50 rounded-lg p-4">
-                                            <div className="mb-4">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                    Fixed Skill Proficiencies
-                                                </label>
-                                                <div className="flex gap-2">
-                                                    {races[character.race].subraces[character.subrace].proficiencies.skills.fixed.map(skill => (
-                                                        <span key={skill} className="px-3 py-1 bg-blue-500/20 border border-blue-500 text-blue-300 rounded text-sm">
-                                                            {skill} (Automatic)
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            
-                                            {races[character.race].subraces[character.subrace].proficiencies.skills.additionalChoice && (
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                        Choose {races[character.race].subraces[character.subrace].proficiencies.skills.additionalChoice.count} Additional Skill Proficienc{races[character.race].subraces[character.subrace].proficiencies.skills.additionalChoice.count > 1 ? 'ies' : 'y'}
-                                                    </label>
-                                                    <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-                                                        {availableSkills
-                                                            .filter(skill => !races[character.race].subraces[character.subrace].proficiencies.skills.fixed.includes(skill))
-                                                            .map(skill => {
-                                                                const isSelected = character.raceChoices.additionalSkills?.includes(skill);
-                                                                const maxReached = (character.raceChoices.additionalSkills?.length || 0) >= races[character.race].subraces[character.subrace].proficiencies.skills.additionalChoice.count;
-                                                                
-                                                                return (
-                                                                    <button
-                                                                        key={skill}
-                                                                        onClick={() => {
-                                                                            setCharacter(prev => {
-                                                                                const currentSkills = prev.raceChoices.additionalSkills || [];
-                                                                                let newSkills;
-                                                                                
-                                                                                if (isSelected) {
-                                                                                    newSkills = currentSkills.filter(s => s !== skill);
-                                                                                } else if (!maxReached) {
-                                                                                    newSkills = [...currentSkills, skill];
-                                                                                } else {
-                                                                                    return prev;
-                                                                                }
-                                                                                
-                                                                                return {
-                                                                                    ...prev,
-                                                                                    raceChoices: {
-                                                                                        ...prev.raceChoices,
-                                                                                        additionalSkills: newSkills
-                                                                                    }
-                                                                                };
-                                                                            });
-                                                                        }}
-                                                                        disabled={!isSelected && maxReached}
-                                                                        className={`p-2 rounded text-xs transition-all ${
-                                                                            isSelected
-                                                                                ? 'bg-green-500/20 border border-green-500 text-white'
-                                                                                : 'bg-gray-800 border border-gray-600 text-gray-300 hover:border-gray-500 disabled:opacity-50'
-                                                                        }`}
-                                                                    >
-                                                                        {skill}
-                                                                    </button>
-                                                                );
-                                                            })}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {/* Weapon choice */}
-                                    {races[character.race]?.subraces[character.subrace]?.proficiencies?.weapons?.type === 'choice' && (
-                                        <div className="bg-gray-700/50 rounded-lg p-4">
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                Choose {races[character.race].subraces[character.subrace].proficiencies.weapons.count} Weapon Proficiency
-                                            </label>
-                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                                {availableWeapons.map(weapon => (
-                                                    <button
-                                                        key={weapon}
-                                                        onClick={() => setCharacter(prev => ({
-                                                            ...prev,
-                                                            raceChoices: {
-                                                                ...prev.raceChoices,
-                                                                weapons: [weapon]
-                                                            }
-                                                        }))}
-                                                        className={`p-2 rounded text-sm transition-all ${
-                                                            character.raceChoices.weapons?.[0] === weapon
-                                                                ? 'bg-green-500/20 border border-green-500 text-white'
-                                                                : 'bg-gray-800 border border-gray-600 text-gray-300 hover:border-gray-500'
-                                                        }`}
-                                                    >
-                                                        {weapon}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-
-                            {/* Origins Selection with Full Benefits */}
+                            {/* Origins Selection */}
                             <div className="bg-gray-700/50 rounded-lg p-4">
                                 <label className="block text-sm font-medium text-gray-300 mb-2">
                                     Select Origins (Choose 2 from different categories)
@@ -1522,8 +921,8 @@ ${asiList || 'None selected'}
                                     {/* Biome Origins */}
                                     <div>
                                         <h3 className="text-sm font-semibold text-gray-400 mb-2">Biome Origins</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-96 overflow-y-auto p-1">
-                                            {origins.biome.map(origin => (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-1">
+                                            {origins.biome.slice(0, 6).map(origin => (
                                                 <button
                                                     key={origin.name}
                                                     onClick={() => {
@@ -1552,12 +951,11 @@ ${asiList || 'None selected'}
                                     {/* Background Origins */}
                                     <div>
                                         <h3 className="text-sm font-semibold text-gray-400 mb-2">Background Origins</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-96 overflow-y-auto p-1">
-                                            {origins.background.map(origin => (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-1">
+                                            {origins.background.slice(0, 6).map(origin => (
                                                 <button
                                                     key={origin.name}
                                                     onClick={() => {
-                                                        // Prevent Jaffa from selecting Former Host
                                                         if (origin.name === 'Former Host' && character.race === 'Jaffa') {
                                                             return;
                                                         }
@@ -1581,19 +979,9 @@ ${asiList || 'None selected'}
                                                             : 'border-gray-600 bg-gray-800 hover:border-gray-500 disabled:opacity-50'
                                                     }`}
                                                 >
-                                                    <div className="font-semibold text-sm text-white flex items-center gap-2">
-                                                        {origin.name}
-                                                        {origin.name === 'Former Host' && character.race === 'Jaffa' && (
-                                                            <span className="text-xs text-red-400">(Incompatible with Jaffa)</span>
-                                                        )}
-                                                    </div>
+                                                    <div className="font-semibold text-sm text-white">{origin.name}</div>
                                                     <div className="text-xs text-green-400 mt-1">
-                                                        Prof: {origin.proficiency?.type === 'choice' ? 
-                                                            (origin.proficiency.options[0] === 'Weapon' ? 'Choose Weapon' :
-                                                             origin.proficiency.options[0] === 'Armor' ? 'Choose Armor' :
-                                                             origin.proficiency.options[0] === 'Tool' ? 'Choose Tool' :
-                                                             'Choose') : 
-                                                            origin.proficiency}
+                                                        Prof: {origin.proficiency?.type === 'choice' ? 'Choose' : origin.proficiency}
                                                     </div>
                                                     <div className="text-xs text-gray-400">{origin.ability}</div>
                                                 </button>
@@ -1625,14 +1013,7 @@ ${asiList || 'None selected'}
                                                         }`}
                                                     >
                                                         <div className="font-semibold text-sm text-white">{origin.name}</div>
-                                                        <div className="text-xs text-green-400 mt-1">
-                                                            {origin.attribute}
-                                                            {origin.proficiency && (
-                                                                <span className="ml-2">
-                                                                    | Prof: {origin.proficiency?.type === 'choice' ? origin.proficiency.options.join('/') : origin.proficiency}
-                                                                </span>
-                                                            )}
-                                                        </div>
+                                                        <div className="text-xs text-green-400 mt-1">{origin.attribute}</div>
                                                         <div className="text-xs text-gray-400">{origin.ability}</div>
                                                     </button>
                                                 ))}
@@ -1650,10 +1031,7 @@ ${asiList || 'None selected'}
                                                 className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded cursor-pointer hover:bg-red-500/20 hover:text-red-300"
                                                 onClick={() => setCharacter(prev => ({
                                                     ...prev,
-                                                    origins: prev.origins.filter(o => o !== origin),
-                                                    originChoices: Object.fromEntries(
-                                                        Object.entries(prev.originChoices).filter(([key]) => key !== origin)
-                                                    )
+                                                    origins: prev.origins.filter(o => o !== origin)
                                                 }))}
                                             >
                                                 {origin} ×
@@ -1662,52 +1040,6 @@ ${asiList || 'None selected'}
                                     </div>
                                 )}
                             </div>
-
-                            {/* Origin Proficiency Choices */}
-                            {character.origins.map(originName => {
-                                const backgroundOrigin = origins.background.find(o => o.name === originName);
-                                const racialOrigin = origins.racial[character.race]?.find(o => o.name === originName);
-                                const origin = backgroundOrigin || racialOrigin;
-                                
-                                if (origin?.proficiency?.type === 'choice') {
-                                    return (
-                                        <div key={originName} className="bg-gray-700/50 rounded-lg p-4">
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                Choose {originName} Proficiency
-                                            </label>
-                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                                {origin.proficiency.options.map(option => {
-                                                    const optionList = option === 'Weapon' ? availableWeapons : 
-                                                                     option === 'Armor' ? availableArmor :
-                                                                     option === 'Tool' ? availableTools :
-                                                                     [option];
-                                                    
-                                                    return optionList.map(item => (
-                                                        <button
-                                                            key={item}
-                                                            onClick={() => setCharacter(prev => ({
-                                                                ...prev,
-                                                                originChoices: {
-                                                                    ...prev.originChoices,
-                                                                    [originName]: item
-                                                                }
-                                                            }))}
-                                                            className={`p-2 rounded text-sm transition-all ${
-                                                                character.originChoices[originName] === item
-                                                                    ? 'bg-green-500/20 border border-green-500 text-white'
-                                                                    : 'bg-gray-800 border border-gray-600 text-gray-300 hover:border-gray-500'
-                                                            }`}
-                                                        >
-                                                            {item}
-                                                        </button>
-                                                    ));
-                                                })}
-                                            </div>
-                                        </div>
-                                    );
-                                }
-                                return null;
-                            })}
 
                             {/* Class Selection */}
                             <div className="bg-gray-700/50 rounded-lg p-4">
@@ -1772,7 +1104,7 @@ ${asiList || 'None selected'}
                                                 const mpData = calculateMP();
                                                 return (
                                                     <>
-                                                        <div>Total MP Earned: {mpData.total}</div>
+                                                        <div>Total MP: {mpData.total} (Level {character.level} = {character.level - 5} × 10)</div>
                                                         <div>MP Spent on Feats: {mpData.spent}</div>
                                                         <div className="text-green-400 font-semibold">Available MP: {mpData.available}</div>
                                                     </>
@@ -1781,287 +1113,144 @@ ${asiList || 'None selected'}
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Show bonus feats for levels 5, 11, 17 */}
+                                {character.level >= 5 && (
+                                    <div className="mt-4 p-3 bg-yellow-500/10 rounded border border-yellow-500/30">
+                                        <div className="flex items-center gap-2 text-yellow-300 mb-2">
+                                            <span className="icon-star"></span>
+                                            <span className="text-sm font-semibold">Bonus Feats (Automatic)</span>
+                                        </div>
+                                        <div className="text-xs text-gray-300">
+                                            {getBonusFeats().map((feat, idx) => (
+                                                <div key={idx}>
+                                                    Level {feat === 'Attack Specialist' ? 5 : feat === 'Attack Veteran' ? 11 : 17}: {feat}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Class Feat Selection */}
-                            {character.class && getRequiredFeatCount() > 0 && (
-                                <div className="bg-gray-700/50 rounded-lg p-4">
-                                    <h3 className="text-lg font-semibold text-gray-300 mb-4 flex items-center gap-2">
-                                        <span className="icon-sparkles"></span>
-                                        Class Feat Selection
-                                    </h3>
-                                    <p className="text-sm text-gray-400 mb-4">
-                                        Select {getRequiredFeatCount()} {getClassFeatType()} feat{getRequiredFeatCount() > 1 ? 's' : ''} for your {character.class} (Level {character.level})
-                                    </p>
-                                    
-                                    <div className="space-y-2">
-                                        {featCategories[getClassFeatType()]?.feats.map(feat => {
-                                            const isSelected = character.classFeats.includes(feat.name);
-                                            const canSelect = character.classFeats.length < getRequiredFeatCount() && !isSelected;
-                                            const requirementCheck = checkFeatRequirements(feat);
-                                            
-                                            return (
-                                                <button
-                                                    key={feat.name}
-                                                    onClick={() => {
-                                                        setCharacter(prev => {
-                                                            if (isSelected) {
-                                                                // Remove the feat
-                                                                return {
-                                                                    ...prev,
-                                                                    classFeats: prev.classFeats.filter(f => f !== feat.name)
-                                                                };
-                                                            } else if (canSelect && requirementCheck.canTake) {
-                                                                // Add the feat
-                                                                return {
-                                                                    ...prev,
-                                                                    classFeats: [...prev.classFeats, feat.name]
-                                                                };
-                                                            }
-                                                            return prev;
-                                                        });
-                                                    }}
-                                                    disabled={!isSelected && (!canSelect || !requirementCheck.canTake)}
-                                                    className={`w-full text-left p-3 rounded border transition-all ${
-                                                        isSelected
-                                                            ? 'border-purple-500 bg-purple-500/20'
-                                                            : (canSelect && requirementCheck.canTake)
-                                                            ? 'border-gray-600 bg-gray-800 hover:border-gray-500'
-                                                            : 'border-gray-700 bg-gray-900/50 opacity-50 cursor-not-allowed'
-                                                    }`}
-                                                >
-                                                    <div className="flex justify-between items-start">
-                                                        <div className="flex-1">
-                                                            <div className="font-semibold text-sm text-white">{feat.name}</div>
-                                                            <div className="text-xs text-gray-400 mt-1">{feat.description}</div>
-                                                            {feat.requirements.length > 0 && (
-                                                                <div className="text-xs mt-2">
-                                                                    <span className="text-yellow-300">Requirements:</span>
-                                                                    <span className={`ml-1 ${requirementCheck.canTake ? 'text-green-400' : 'text-red-400'}`}>
-                                                                        {feat.requirements.join(', ')}
-                                                                        {!requirementCheck.canTake && (
-                                                                            <span className="ml-1 text-red-300">
-                                                                                (Missing: {requirementCheck.unmetRequirements.join(', ')})
-                                                                            </span>
-                                                                        )}
-                                                                    </span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        {isSelected && (
-                                                            <div className="ml-2 text-purple-400">
-                                                                ✓
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                    
-                                    <div className="mt-4 text-sm text-gray-400">
-                                        Selected: {character.classFeats.length}/{getRequiredFeatCount()}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* General Feat Selection for Level 6+ */}
+                            {/* COMPLETELY NEW: Category-Based Feat Selection for Level 6+ */}
                             {character.level > 5 && (
                                 <div className="bg-gray-700/50 rounded-lg p-4">
                                     <h3 className="text-lg font-semibold text-gray-300 mb-4 flex items-center gap-2">
                                         <span className="icon-star"></span>
-                                        General Feat Selection (Level 6+)
+                                        Feat Selection (Level 6+)
                                     </h3>
                                     
                                     <div className="mb-4 p-3 bg-blue-500/10 rounded border border-blue-500/30">
-                                        <div className="flex items-center gap-2 text-blue-300 mb-2">
-                                            <span className="icon-coins"></span>
-                                            <span className="text-sm font-semibold">Mission Points Available: {calculateMP().available}</span>
+                                        <div className="flex items-center justify-between text-blue-300 mb-2">
+                                            <span className="text-sm font-semibold flex items-center gap-2">
+                                                <span className="icon-coins"></span>
+                                                Mission Points Available
+                                            </span>
+                                            <span className="text-lg font-bold">{calculateMP().available} / {calculateMP().total} MP</span>
                                         </div>
-                                        <p className="text-xs text-gray-300">Purchase feats with Mission Points. Each feat costs MP as shown.</p>
+                                        <p className="text-xs text-gray-300">Select a category below to browse and purchase feats with your Mission Points.</p>
                                     </div>
 
-                                    {Object.entries(featCategories).map(([categoryKey, category]) => (
-                                        <div key={categoryKey} className="mb-6">
-                                            <div className="mb-3">
-                                                <h4 className="text-md font-semibold text-white flex items-center gap-2">
-                                                    <span className="icon-sparkles"></span>
+                                    {/* Category Selection Tabs */}
+                                    <div className="mb-6">
+                                        <div className="flex flex-wrap gap-2 mb-4">
+                                            {Object.entries(featCategories).map(([categoryKey, category]) => (
+                                                <button
+                                                    key={categoryKey}
+                                                    onClick={() => setSelectedFeatCategory(categoryKey)}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                                        selectedFeatCategory === categoryKey
+                                                            ? 'bg-purple-500 text-white border-2 border-purple-300'
+                                                            : 'bg-gray-800 border border-gray-600 text-gray-300 hover:border-gray-500'
+                                                    }`}
+                                                >
                                                     {category.name}
-                                                    {category.classRestricted && (
-                                                        <span className="text-xs px-2 py-1 bg-orange-500/20 text-orange-300 rounded">
-                                                            Best for {category.classRestricted}
-                                                        </span>
-                                                    )}
-                                                </h4>
-                                                <p className="text-xs text-gray-400 mt-1">{category.description}</p>
-                                            </div>
-                                            
-                                            <div className="grid grid-cols-1 gap-2">
-                                                {category.feats.slice(0, 3).map(feat => { // Show first 3 feats by default
-                                                    const isSelected = character.generalFeats.includes(feat.name);
-                                                    const requirementCheck = checkFeatRequirements(feat);
-                                                    const canAfford = calculateMP().available >= feat.mpCost;
-                                                    const canSelect = !isSelected && requirementCheck.canTake && canAfford;
+                                                </button>
+                                            ))}
+                                        </div>
 
-                                                    return (
-                                                        <button
-                                                            key={feat.name}
-                                                            onClick={() => {
-                                                                if (isSelected) {
-                                                                    // Remove feat
-                                                                    setCharacter(prev => ({
-                                                                        ...prev,
-                                                                        generalFeats: prev.generalFeats.filter(f => f !== feat.name)
-                                                                    }));
-                                                                } else if (canSelect) {
-                                                                    // Add feat
-                                                                    setCharacter(prev => ({
-                                                                        ...prev,
-                                                                        generalFeats: [...prev.generalFeats, feat.name]
-                                                                    }));
-                                                                }
-                                                            }}
-                                                            disabled={!isSelected && !canSelect}
-                                                            className={`text-left p-3 rounded border transition-all ${
-                                                                isSelected
-                                                                    ? 'border-green-500 bg-green-500/20'
-                                                                    : canSelect
-                                                                    ? 'border-gray-600 bg-gray-800 hover:border-gray-500'
-                                                                    : 'border-gray-700 bg-gray-900/50 opacity-60 cursor-not-allowed'
-                                                            }`}
-                                                        >
-                                                            <div className="flex justify-between items-start">
-                                                                <div className="flex-1">
-                                                                    <div className="flex items-center gap-2 mb-1">
-                                                                        <span className="font-semibold text-sm text-white">{feat.name}</span>
-                                                                        <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded">
-                                                                            {feat.mpCost} MP
-                                                                        </span>
-                                                                        {isSelected && <span className="icon-check text-green-400"></span>}
-                                                                        {!canAfford && !isSelected && <span className="icon-coins text-red-400"></span>}
-                                                                    </div>
-                                                                    <div className="text-xs text-gray-400 mb-2">{feat.description}</div>
-                                                                    
-                                                                    {feat.requirements.length > 0 && (
-                                                                        <div className="text-xs">
-                                                                            <span className="text-yellow-300">Requirements:</span>
-                                                                            <span className={`ml-1 ${requirementCheck.canTake ? 'text-green-400' : 'text-red-400'}`}>
-                                                                                {feat.requirements.join(', ')}
-                                                                                {!requirementCheck.canTake && (
-                                                                                    <span className="ml-1 text-red-300">
-                                                                                        (Missing: {requirementCheck.unmetRequirements.join(', ')})
-                                                                                    </span>
-                                                                                )}
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-                                                                    
-                                                                    {!canAfford && !isSelected && (
-                                                                        <div className="text-xs text-red-400 mt-1">
-                                                                            Insufficient MP (Need {feat.mpCost}, Have {calculateMP().available})
-                                                                        </div>
-                                                                    )}
-                                                                </div>
+                                        {/* Selected Category Description */}
+                                        <div className="p-4 bg-gray-800/50 rounded-lg mb-4">
+                                            <h4 className="text-md font-semibold text-white mb-2">
+                                                {featCategories[selectedFeatCategory].name}
+                                            </h4>
+                                            <p className="text-sm text-gray-300">
+                                                {featCategories[selectedFeatCategory].description}
+                                            </p>
+                                        </div>
+
+                                        {/* Feat Grid for Selected Category */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {featCategories[selectedFeatCategory].feats.map(feat => {
+                                                const isSelected = character.generalFeats.includes(feat.name);
+                                                const requirementCheck = checkFeatRequirements(feat);
+                                                const canAfford = calculateMP().available >= feat.mpCost;
+                                                const canSelect = !isSelected && requirementCheck.canTake && canAfford;
+
+                                                return (
+                                                    <button
+                                                        key={feat.name}
+                                                        onClick={() => {
+                                                            if (isSelected) {
+                                                                // Remove feat
+                                                                setCharacter(prev => ({
+                                                                    ...prev,
+                                                                    generalFeats: prev.generalFeats.filter(f => f !== feat.name)
+                                                                }));
+                                                            } else if (canSelect) {
+                                                                // Add feat
+                                                                setCharacter(prev => ({
+                                                                    ...prev,
+                                                                    generalFeats: [...prev.generalFeats, feat.name]
+                                                                }));
+                                                            }
+                                                        }}
+                                                        disabled={!isSelected && !canSelect}
+                                                        className={`text-left p-4 rounded-lg border-2 transition-all ${
+                                                            isSelected
+                                                                ? 'border-green-500 bg-green-500/20 text-white'
+                                                                : canSelect
+                                                                ? 'border-gray-600 bg-gray-800 hover:border-purple-500 hover:bg-purple-500/10 text-white'
+                                                                : 'border-gray-700 bg-gray-900/30 opacity-60 cursor-not-allowed text-gray-400'
+                                                        }`}
+                                                    >
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-semibold text-sm">{feat.name}</span>
+                                                                {isSelected && <span className="icon-check text-green-400"></span>}
                                                             </div>
-                                                        </button>
-                                                    );
-                                                })}
-                                                
-                                                {/* Show more button if there are more feats */}
-                                                {category.feats.length > 3 && (
-                                                    <div className="text-center">
-                                                        <button className="text-xs text-blue-400 hover:text-blue-300 underline">
-                                                            Show {category.feats.length - 3} more {category.name.toLowerCase()}...
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Ability Score Improvement at Level 4 */}
-                            {character.level >= 4 && character.class && (
-                                <div className="bg-gray-700/50 rounded-lg p-4">
-                                    <h3 className="text-lg font-semibold text-gray-300 mb-4">
-                                        Level 4 - Ability Score Improvement
-                                    </h3>
-                                    <p className="text-sm text-gray-400 mb-4">
-                                        Choose either: +2 to one ability score, OR +1 to two different ability scores
-                                    </p>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                Option 1: +2 to one ability
-                                            </label>
-                                            <select
-                                                value={character.abilityScoreImprovements?.option1 || ''}
-                                                onChange={(e) => setCharacter(prev => ({
-                                                    ...prev,
-                                                    abilityScoreImprovements: {
-                                                        option1: e.target.value,
-                                                        option2a: '',
-                                                        option2b: ''
-                                                    }
-                                                }))}
-                                                className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white"
-                                            >
-                                                <option value="">Select ability...</option>
-                                                <option value="strength_2">Strength +2</option>
-                                                <option value="dexterity_2">Dexterity +2</option>
-                                                <option value="constitution_2">Constitution +2</option>
-                                                <option value="intelligence_2">Intelligence +2</option>
-                                                <option value="wisdom_2">Wisdom +2</option>
-                                                <option value="charisma_2">Charisma +2</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                Option 2: +1 to two abilities
-                                            </label>
-                                            <div className="space-y-2">
-                                                <select
-                                                    value={character.abilityScoreImprovements?.option2a || ''}
-                                                    onChange={(e) => setCharacter(prev => ({
-                                                        ...prev,
-                                                        abilityScoreImprovements: {
-                                                            option1: '',
-                                                            option2a: e.target.value,
-                                                            option2b: prev.abilityScoreImprovements?.option2b || ''
-                                                        }
-                                                    }))}
-                                                    className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white"
-                                                >
-                                                    <option value="">First ability +1...</option>
-                                                    <option value="strength">Strength +1</option>
-                                                    <option value="dexterity">Dexterity +1</option>
-                                                    <option value="constitution">Constitution +1</option>
-                                                    <option value="intelligence">Intelligence +1</option>
-                                                    <option value="wisdom">Wisdom +1</option>
-                                                    <option value="charisma">Charisma +1</option>
-                                                </select>
-                                                <select
-                                                    value={character.abilityScoreImprovements?.option2b || ''}
-                                                    onChange={(e) => setCharacter(prev => ({
-                                                        ...prev,
-                                                        abilityScoreImprovements: {
-                                                            option1: '',
-                                                            option2a: prev.abilityScoreImprovements?.option2a || '',
-                                                            option2b: e.target.value
-                                                        }
-                                                    }))}
-                                                    className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white"
-                                                >
-                                                    <option value="">Second ability +1...</option>
-                                                    <option value="strength">Strength +1</option>
-                                                    <option value="dexterity">Dexterity +1</option>
-                                                    <option value="constitution">Constitution +1</option>
-                                                    <option value="intelligence">Intelligence +1</option>
-                                                    <option value="wisdom">Wisdom +1</option>
-                                                    <option value="charisma">Charisma +1</option>
-                                                </select>
-                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs px-2 py-1 bg-blue-500/30 text-blue-300 rounded">
+                                                                    {feat.mpCost} MP
+                                                                </span>
+                                                                {!canAfford && !isSelected && <span className="icon-coins text-red-400"></span>}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="text-xs text-gray-300 mb-3">{feat.description}</div>
+                                                        
+                                                        {feat.requirements.length > 0 && (
+                                                            <div className="text-xs mb-2">
+                                                                <span className="text-yellow-300">Requirements:</span>
+                                                                <span className={`ml-1 ${requirementCheck.canTake ? 'text-green-400' : 'text-red-400'}`}>
+                                                                    {feat.requirements.join(', ')}
+                                                                </span>
+                                                                {!requirementCheck.canTake && (
+                                                                    <div className="text-red-300 mt-1">
+                                                                        Missing: {requirementCheck.unmetRequirements.join(', ')}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {!canAfford && !isSelected && (
+                                                            <div className="text-xs text-red-400">
+                                                                Need {feat.mpCost} MP (Have {calculateMP().available})
+                                                            </div>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>
@@ -2122,158 +1311,27 @@ ${asiList || 'None selected'}
                                 </div>
                             </div>
 
-                            {/* Final Ability Scores Visual Breakdown */}
-                            <div className="bg-gray-700/50 rounded-lg p-4">
-                                <h3 className="text-lg font-semibold text-gray-300 mb-4">Final Ability Scores Breakdown</h3>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {Object.entries(character.abilityScores).map(([ability, baseScore]) => {
-                                        const { racialBonus, originBonus, asiBonus } = getAbilityBonuses(ability);
-                                        const totalBonus = racialBonus + originBonus + asiBonus;
-                                        const finalScore = baseScore + totalBonus;
-                                        const modifier = getModifier(finalScore);
-                                        
-                                        return (
-                                            <div key={ability} className="bg-gray-800 rounded-lg p-4">
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <span className="text-sm font-semibold text-white capitalize">{ability}</span>
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="text-2xl font-bold text-white">{finalScore}</span>
-                                                        <span className={`text-lg font-semibold px-2 py-1 rounded ${
-                                                            modifier >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                                                        }`}>
-                                                            {modifier >= 0 ? '+' : ''}{modifier}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div className="space-y-1 text-xs">
-                                                    <div className="flex justify-between items-center py-1 border-b border-gray-700">
-                                                        <span className="text-gray-400">Base (Point Buy)</span>
-                                                        <span className="text-gray-300 font-semibold">{baseScore}</span>
-                                                    </div>
-                                                    
-                                                    {racialBonus !== 0 && (
-                                                        <div className="flex justify-between items-center py-1 border-b border-gray-700">
-                                                            <span className="text-blue-400">Racial Bonus</span>
-                                                            <span className="text-blue-300 font-semibold">+{racialBonus}</span>
-                                                        </div>
-                                                    )}
-                                                    
-                                                    {originBonus !== 0 && (
-                                                        <div className="flex justify-between items-center py-1 border-b border-gray-700">
-                                                            <span className="text-purple-400">Origin Bonus</span>
-                                                            <span className="text-purple-300 font-semibold">+{originBonus}</span>
-                                                        </div>
-                                                    )}
-                                                    
-                                                    {asiBonus !== 0 && (
-                                                        <div className="flex justify-between items-center py-1 border-b border-gray-700">
-                                                            <span className="text-yellow-400">ASI Bonus</span>
-                                                            <span className="text-yellow-300 font-semibold">+{asiBonus}</span>
-                                                        </div>
-                                                    )}
-                                                    
-                                                    {totalBonus > 0 && (
-                                                        <div className="flex justify-between items-center pt-2 mt-1 border-t-2 border-gray-600">
-                                                            <span className="text-green-400 font-semibold">Total Bonus</span>
-                                                            <span className="text-green-300 font-bold">+{totalBonus}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                
-                                                {/* Visual bar representation */}
-                                                <div className="mt-3">
-                                                    <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                                                        <div className="h-full flex">
-                                                            <div 
-                                                                className="bg-gray-500"
-                                                                style={{ width: `${(baseScore / 20) * 100}%` }}
-                                                            />
-                                                            {racialBonus > 0 && (
-                                                                <div 
-                                                                    className="bg-blue-500"
-                                                                    style={{ width: `${(racialBonus / 20) * 100}%` }}
-                                                                />
-                                                            )}
-                                                            {originBonus > 0 && (
-                                                                <div 
-                                                                    className="bg-purple-500"
-                                                                    style={{ width: `${(originBonus / 20) * 100}%` }}
-                                                                />
-                                                            )}
-                                                            {asiBonus > 0 && (
-                                                                <div 
-                                                                    className="bg-yellow-500"
-                                                                    style={{ width: `${(asiBonus / 20) * 100}%` }}
-                                                                />
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex justify-between mt-1">
-                                                        <span className="text-xs text-gray-500">0</span>
-                                                        <span className="text-xs text-gray-500">20</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* Combat Statistics with Breakdowns */}
+                            {/* Combat Statistics */}
                             <div className="bg-gray-700/50 rounded-lg p-4">
                                 <h3 className="text-lg font-semibold text-gray-300 mb-4">Combat Statistics</h3>
                                 
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    {/* HP with breakdown */}
                                     <div className="bg-gray-800 rounded-lg p-3">
                                         <div className="flex items-center gap-2 text-red-400 mb-1">
                                             <span className="icon-heart"></span>
                                             <span className="text-xs">Hit Points</span>
-                                            <button className="ml-auto">
-                                                <span className="icon-info"></span>
-                                            </button>
                                         </div>
                                         <div className="text-2xl font-bold text-white">{character.hp || 0}</div>
-                                        <div className="text-xs text-gray-400 mt-1 space-y-0.5">
-                                            {(() => {
-                                                const breakdown = getHPBreakdown();
-                                                return (
-                                                    <>
-                                                        <div>Class HD: d{breakdown.classBase}</div>
-                                                        <div>Con Mod: {breakdown.conModifier >= 0 ? '+' : ''}{breakdown.conModifier}</div>
-                                                        <div>Race: +{breakdown.raceBonus}</div>
-                                                        {breakdown.levelBonus > 0 && <div>Level Bonus: +{breakdown.levelBonus}</div>}
-                                                        {breakdown.militaryBonus > 0 && <div>Military: +{breakdown.militaryBonus}</div>}
-                                                    </>
-                                                );
-                                            })()}
-                                        </div>
                                     </div>
                                     
-                                    {/* AC with breakdown */}
                                     <div className="bg-gray-800 rounded-lg p-3">
                                         <div className="flex items-center gap-2 text-blue-400 mb-1">
                                             <span className="icon-shield"></span>
                                             <span className="text-xs">Armor Class</span>
                                         </div>
                                         <div className="text-2xl font-bold text-white">{character.armorClass}</div>
-                                        <div className="text-xs text-gray-400 mt-1 space-y-0.5">
-                                            {(() => {
-                                                const breakdown = getACBreakdown();
-                                                return (
-                                                    <>
-                                                        <div>Base: 10</div>
-                                                        <div>Dex Mod: {breakdown.dexModifier >= 0 ? '+' : ''}{breakdown.dexModifier}</div>
-                                                        {breakdown.armorBonus > 0 && <div>Armor: +{breakdown.armorBonus}</div>}
-                                                    </>
-                                                );
-                                            })()}
-                                        </div>
                                     </div>
                                     
-                                    {/* Initiative with breakdown */}
                                     <div className="bg-gray-800 rounded-lg p-3">
                                         <div className="flex items-center gap-2 text-yellow-400 mb-1">
                                             <span className="icon-zap"></span>
@@ -2282,53 +1340,24 @@ ${asiList || 'None selected'}
                                         <div className="text-2xl font-bold text-white">
                                             {character.initiative >= 0 ? '+' : ''}{character.initiative}
                                         </div>
-                                        <div className="text-xs text-gray-400 mt-1 space-y-0.5">
-                                            {(() => {
-                                                const breakdown = getInitiativeBreakdown();
-                                                return (
-                                                    <>
-                                                        <div>Dex: {breakdown.dexModifier >= 0 ? '+' : ''}{breakdown.dexModifier}</div>
-                                                        <div>Wis: {breakdown.wisModifier >= 0 ? '+' : ''}{breakdown.wisModifier}</div>
-                                                        <div className="text-blue-300">Use higher value</div>
-                                                    </>
-                                                );
-                                            })()}
-                                        </div>
                                     </div>
                                     
-                                    {/* Determination with breakdown */}
                                     <div className="bg-gray-800 rounded-lg p-3">
                                         <div className="flex items-center gap-2 text-purple-400 mb-1">
                                             <span className="icon-brain"></span>
                                             <span className="text-xs">Determination</span>
                                         </div>
                                         <div className="text-2xl font-bold text-white">{character.determinationPoints}</div>
-                                        <div className="text-xs text-gray-400 mt-1 space-y-0.5">
-                                            {(() => {
-                                                const breakdown = getDeterminationBreakdown();
-                                                return (
-                                                    <>
-                                                        <div>Base: {breakdown.base}</div>
-                                                        {breakdown.classBonus > 0 && <div>Class: +{breakdown.classBonus}</div>}
-                                                    </>
-                                                );
-                                            })()}
-                                        </div>
                                     </div>
                                     
-                                    {/* Speed */}
                                     <div className="bg-gray-800 rounded-lg p-3">
                                         <div className="flex items-center gap-2 text-green-400 mb-1">
                                             <span className="icon-activity"></span>
                                             <span className="text-xs">Speed</span>
                                         </div>
                                         <div className="text-2xl font-bold text-white">{character.speed}m</div>
-                                        <div className="text-xs text-gray-400 mt-1">
-                                            {character.origins.includes('Grasslands') ? 'Base: 6m + 1m (Grasslands)' : 'Base: 6m'}
-                                        </div>
                                     </div>
                                     
-                                    {/* Moxie with breakdown */}
                                     <div className="bg-gray-800 rounded-lg p-3">
                                         <div className="flex items-center gap-2 text-cyan-400 mb-1">
                                             <span className="icon-user"></span>
@@ -2337,54 +1366,24 @@ ${asiList || 'None selected'}
                                         <div className="text-2xl font-bold text-white">
                                             {character.moxie >= 0 ? '+' : ''}{character.moxie}
                                         </div>
-                                        <div className="text-xs text-gray-400 mt-1 space-y-0.5">
-                                            {(() => {
-                                                const breakdown = getMoxieBreakdown();
-                                                return (
-                                                    <>
-                                                        <div>Int: {breakdown.intModifier >= 0 ? '+' : ''}{breakdown.intModifier}</div>
-                                                        <div>Cha: {breakdown.chaModifier >= 0 ? '+' : ''}{breakdown.chaModifier}</div>
-                                                        <div className="text-blue-300">Use higher value</div>
-                                                    </>
-                                                );
-                                            })()}
-                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Class Abilities */}
-                            {character.class && (
-                                <div className="bg-gray-700/50 rounded-lg p-4">
-                                    <h3 className="text-lg font-semibold text-gray-300 mb-4">Class Abilities</h3>
-                                    <div className="space-y-2">
-                                        {Object.entries(classes[character.class].abilities)
-                                            .filter(([lvl, _]) => parseInt(lvl) <= character.level)
-                                            .map(([lvl, abilities]) => (
-                                                <div key={lvl} className="bg-gray-800 rounded-lg p-3">
-                                                    <span className="text-sm text-gray-400">Level {lvl}:</span>
-                                                    <div className="text-white mt-1">
-                                                        {abilities.join(', ')}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                    </div>
-                                </div>
-                            )}
-
                             {/* Selected Feats Summary */}
-                            {(character.classFeats.length > 0 || character.generalFeats.length > 0) && (
+                            {(character.generalFeats.length > 0 || character.bonusFeats.length > 0) && (
                                 <div className="bg-gray-700/50 rounded-lg p-4">
                                     <h3 className="text-lg font-semibold text-gray-300 mb-4">Selected Feats</h3>
                                     
-                                    {character.classFeats.length > 0 && (
+                                    {character.bonusFeats.length > 0 && (
                                         <div className="mb-4">
-                                            <h4 className="text-sm font-semibold text-blue-300 mb-2">Class Feats</h4>
+                                            <h4 className="text-sm font-semibold text-yellow-300 mb-2">Bonus Feats (Automatic)</h4>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                                {character.classFeats.map(featName => (
-                                                    <div key={featName} className="bg-gray-800 p-2 rounded text-sm text-white">
-                                                        <span className="icon-check text-green-400 mr-2"></span>
+                                                {character.bonusFeats.map(featName => (
+                                                    <div key={featName} className="bg-yellow-500/10 border border-yellow-500/30 p-2 rounded text-sm text-white">
+                                                        <span className="icon-star text-yellow-400 mr-2"></span>
                                                         {featName}
+                                                        <span className="text-xs text-yellow-300 ml-2">(Level Bonus)</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -2393,10 +1392,9 @@ ${asiList || 'None selected'}
                                     
                                     {character.generalFeats.length > 0 && (
                                         <div>
-                                            <h4 className="text-sm font-semibold text-purple-300 mb-2">General Feats</h4>
+                                            <h4 className="text-sm font-semibold text-purple-300 mb-2">Purchased Feats</h4>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                 {character.generalFeats.map(featName => {
-                                                    // Find the feat to get its MP cost
                                                     let mpCost = 0;
                                                     for (const category of Object.values(featCategories)) {
                                                         const feat = category.feats.find(f => f.name === featName);
@@ -2422,36 +1420,6 @@ ${asiList || 'None selected'}
                                     )}
                                 </div>
                             )}
-
-                            {/* Warnings for incomplete choices */}
-                            {(needsAbilityChoice() || !allChoicesMade()) && (
-                                <div className="bg-red-500/20 border-2 border-red-500 rounded-lg p-4">
-                                    <div className="flex items-center gap-2 text-red-300">
-                                        <span className="icon-alert"></span>
-                                        <span className="font-semibold">Action Required</span>
-                                    </div>
-                                    <ul className="text-red-200 text-sm mt-2 space-y-1">
-                                        {needsAbilityChoice() && (
-                                            <li>• Select an ability score bonus for your {character.subrace}</li>
-                                        )}
-                                        {!allChoicesMade() && (
-                                            <li>• Complete all proficiency and feat selections for your character</li>
-                                        )}
-                                    </ul>
-                                </div>
-                            )}
-
-                            {/* Export Button */}
-                            <div className="flex justify-end">
-                                <button
-                                    onClick={exportCharacterSheet}
-                                    disabled={!character.race || !character.subrace || !character.class || character.origins.length < 2 || needsAbilityChoice() || !allChoicesMade()}
-                                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-                                >
-                                    <span className="icon-download"></span>
-                                    Export Character Sheet
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
