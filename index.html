@@ -1022,16 +1022,30 @@
             const finalScores = getFinalAbilityScores();
             const mpData = calculateMP();
 
-            // Build feat list
+            // Build feat list - UPDATED TO INCLUDE BONUS FEATS
             let featList = '';
-            if (character.classFeats) {
+            if (character.classFeats && character.classFeats.length > 0) {
                 character.classFeats.forEach((featName, idx) => {
                     featList += `Class Feat ${idx + 1}: ${featName}\n`;
                 });
             }
+            if (character.bonusFeats && character.bonusFeats.length > 0) {
+                character.bonusFeats.forEach((featName, idx) => {
+                    featList += `Bonus Feat ${idx + 1}: ${featName} (Automatic Level Bonus)\n`;
+                });
+            }
             if (character.generalFeats && character.generalFeats.length > 0) {
                 character.generalFeats.forEach((featName, idx) => {
-                    featList += `General Feat ${idx + 1}: ${featName}\n`;
+                    // Find MP cost
+                    let mpCost = 0;
+                    for (const category of Object.values(featCategories)) {
+                        const feat = category.feats.find(f => f.name === featName);
+                        if (feat) {
+                            mpCost = feat.mpCost;
+                            break;
+                        }
+                    }
+                    featList += `General Feat ${idx + 1}: ${featName} (${mpCost} MP)\n`;
                 });
             }
 
