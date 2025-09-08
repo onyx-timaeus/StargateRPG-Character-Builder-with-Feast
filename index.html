@@ -1137,7 +1137,7 @@
                                 <div className="bg-gray-700/50 rounded-lg p-4">
                                     <h3 className="text-lg font-semibold text-gray-300 mb-4 flex items-center gap-2">
                                         <span className="icon-star"></span>
-                                        Feat Selection (Level 6+)
+                                        General Feat Selection (Level 6+)
                                     </h3>
                                     
                                     <div className="mb-4 p-3 bg-blue-500/10 rounded border border-blue-500/30">
@@ -1165,6 +1165,11 @@
                                                     }`}
                                                 >
                                                     {category.name}
+                                                    {category.classRestricted && (
+                                                        <span className="ml-1 text-xs opacity-75">
+                                                            ({category.classRestricted})
+                                                        </span>
+                                                    )}
                                                 </button>
                                             ))}
                                         </div>
@@ -1180,7 +1185,7 @@
                                         </div>
 
                                         {/* Feat Grid for Selected Category */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {featCategories[selectedFeatCategory].feats.map(feat => {
                                                 const isSelected = character.generalFeats.includes(feat.name);
                                                 const requirementCheck = checkFeatRequirements(feat);
@@ -1206,7 +1211,7 @@
                                                             }
                                                         }}
                                                         disabled={!isSelected && !canSelect}
-                                                        className={`text-left p-4 rounded-lg border-2 transition-all ${
+                                                        className={`text-left p-4 rounded-lg border-2 transition-all h-auto ${
                                                             isSelected
                                                                 ? 'border-green-500 bg-green-500/20 text-white'
                                                                 : canSelect
@@ -1227,16 +1232,16 @@
                                                             </div>
                                                         </div>
                                                         
-                                                        <div className="text-xs text-gray-300 mb-3">{feat.description}</div>
+                                                        <div className="text-xs text-gray-300 mb-3 min-h-[3rem]">{feat.description}</div>
                                                         
                                                         {feat.requirements.length > 0 && (
                                                             <div className="text-xs mb-2">
-                                                                <span className="text-yellow-300">Requirements:</span>
+                                                                <span className="text-yellow-300">Req:</span>
                                                                 <span className={`ml-1 ${requirementCheck.canTake ? 'text-green-400' : 'text-red-400'}`}>
                                                                     {feat.requirements.join(', ')}
                                                                 </span>
                                                                 {!requirementCheck.canTake && (
-                                                                    <div className="text-red-300 mt-1">
+                                                                    <div className="text-red-300 mt-1 text-xs">
                                                                         Missing: {requirementCheck.unmetRequirements.join(', ')}
                                                                     </div>
                                                                 )}
