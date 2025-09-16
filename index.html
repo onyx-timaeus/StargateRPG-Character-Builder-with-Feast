@@ -40,49 +40,109 @@
             lock: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
         };
 
-        // Game data (condensed structure)
+        // Game data
         const gameData = {
             fieldHackFeats: [
-                {n:'Camouflage',r:'Stealth',d:'Create camouflage granting advantage on Stealth in natural terrain'},
-                {n:'Camp Security',r:'Perception',d:'Set up camp alarms, advantage on Perception during rest'},
-                {n:'Foraging',r:'Survival',d:'Find food/water for 1d4+Wis mod people per day'},
-                {n:'Hide Tracks',r:'Stealth',d:'Increase DC to track your party by +5'},
-                {n:'Ranger Tricks',r:'Nature',d:'Leave false trails, create natural traps (1d6 damage)'},
-                {n:'Ration Optimization',r:'Survival',d:'Make rations last 50% longer'},
-                {n:'Rope Tricks',r:'Athletics',d:'Advantage on Athletics checks involving ropes and climbing'},
-                {n:'Tracking',r:'Survival',d:'Track creatures, determine numbers and time passed'},
-                {n:'Xenosurvival',r:'Science',d:'Identify alien flora/fauna as safe or dangerous'}
-            ].map(f => ({name:f.n, requirements:f.r, description:f.d})),
+                {name:'Camouflage',requirements:'Stealth',description:'Create camouflage granting advantage on Stealth in natural terrain'},
+                {name:'Camp Security',requirements:'Perception',description:'Set up camp alarms, advantage on Perception during rest'},
+                {name:'Foraging',requirements:'Survival',description:'Find food/water for 1d4+Wis mod people per day'},
+                {name:'Hide Tracks',requirements:'Stealth',description:'Increase DC to track your party by +5'},
+                {name:'Ranger Tricks',requirements:'Nature',description:'Leave false trails, create natural traps (1d6 damage)'},
+                {name:'Ration Optimization',requirements:'Survival',description:'Make rations last 50% longer'},
+                {name:'Rope Tricks',requirements:'Athletics',description:'Advantage on Athletics checks involving ropes and climbing'},
+                {name:'Tracking',requirements:'Survival',description:'Track creatures, determine numbers and time passed'},
+                {name:'Xenosurvival',requirements:'Science',description:'Identify alien flora/fauna as safe or dangerous'}
+            ],
             
             classFeatsByType: {
-                inspiration: ['Calm and Collected|During long rest, choose Int/Wis/Cha. Inspired characters gain advantage on chosen save','Clear Focus|During long rest, choose a skill. Inspired characters gain advantage on that skill','Coordinated Fire|After you hit, bonus action to grant inspired ally advantage on next attack vs same target','Defensive Motivation|Inspired characters gain +1 AC','Enduring Inspirations|At combat start, inspired characters gain tension die worth of Inspire HP','Grim Resolve|When inspired character loses last Inspire HP, gain resistance to physical damage until next turn','Hard Days Night|Inspired characters reduce exhaustion from environment/exertion by 1 level (min 1)','Quippy Comebacks|Once per Diplomatic Function, inspired characters halve DP loss from failed checks','Skillful Explanations|Once per short rest, allow inspired character to re-roll failed skill check you are proficient in'].map(s => {const [n,d] = s.split('|'); return {name:n, description:d}}),
-                modification: ['Armorer|During long rest, grant one armor +1 AC until next rest','Chem Thrower|During long rest, grant line/cone weapon +5m range','Comms Tech|Team radio range 20km (not 5km), balloon duration 15d6 hours','Grenadier|Your grenades deal +1d6 damage','Longarm Calibrations|During long rest, grant longarm +1d4 to attack at long range','Minefield Expert|Bury explosives as mines, advantage to spot mines','Montage|Reduce R&D successes needed by half proficiency bonus','Percussive Maintenance|Machines you grant temp HP to heal +1d6 additional temp HP','Sidearm Calibrations|During long rest, grant sidearm +1 to attack and damage'].map(s => {const [n,d] = s.split('|'); return {name:n, description:d}}),
-                procedure: ['Biohazard Disposal|Team proficient in Constitution saves vs disease/toxins/viruses','Controlled Stimulants|Use Med Kit to heal 1d4 exhaustion (once per rest per character)','Crash Training|Use Med Kit to revive dead character (DC 25 Medicine, once per round)','Embolism|Melee attack deals 1d3 Constitution damage','Improvised Medicine|Heal without Med Kit but target not proficient with','Pharmaceuticals|Heal 1d4 Int/Wis/Cha damage during short rest','Sedatives|Melee attack causes unconsciousness (Con save or 1d6 fatigue levels)','Urgent Care|Replace all healing dice rolled with tension dice','Vital Organ Trauma|Add Wisdom modifier to critical hit damage'].map(s => {const [n,d] = s.split('|'); return {name:n, description:d}}),
-                discovery: ['A Moments Thought|During rest, spend Eureka to re-roll failed Int/Wis check','Archaeologist|Action to spend Eureka and find secret rooms, advantage on finding hidden architecture','Astronomer|Bonus action to reduce Stargate activation by 1 round per Eureka','Biologist|Action to spend Eureka points to heal 1d6 per point','Chemist|Research Kit ranged attack deals 1d6 acid per Eureka (increases with level)','Geologist|Reaction to spend Eureka and negate natural cover','Hyper-Focus|Spend Eureka to add tension die to Int/Wis check','Physicist|Spend Eureka to increase weapon range by 50%','Social Sciences|Gain 1 Eureka when losing Determination Points'].map(s => {const [n,d] = s.split('|'); return {name:n, description:d}}),
-                tactic: ['Ambush|Team gains advantage on first melee attack after rest','Assault Coordination|Next ranged attack by teammate after you hit deals +1d6','Coordinated Response|Team can use your initiative result','Defensive Posture|Allies within 2m gain +2 AC','Distracting Attacks|Target has disadvantage vs chosen ally not within 2m','Hit and Run|Bonus action to let ally Disengage','Overwatchers|90° overwatch field (not 45°), make 2 attacks','Response Shot|Once per encounter, reaction attack when enemy attacks ally','Rush|Bonus action to let ally Dash'].map(s => {const [n,d] = s.split('|'); return {name:n, description:d}})
+                inspiration: [
+                    {name:'Calm and Collected',description:'During long rest, choose Int/Wis/Cha. Inspired characters gain advantage on chosen save'},
+                    {name:'Clear Focus',description:'During long rest, choose a skill. Inspired characters gain advantage on that skill'},
+                    {name:'Coordinated Fire',description:'After you hit, bonus action to grant inspired ally advantage on next attack vs same target'},
+                    {name:'Defensive Motivation',description:'Inspired characters gain +1 AC'},
+                    {name:'Enduring Inspirations',description:'At combat start, inspired characters gain tension die worth of Inspire HP'},
+                    {name:'Grim Resolve',description:'When inspired character loses last Inspire HP, gain resistance to physical damage until next turn'},
+                    {name:'Hard Days Night',description:'Inspired characters reduce exhaustion from environment/exertion by 1 level (min 1)'},
+                    {name:'Quippy Comebacks',description:'Once per Diplomatic Function, inspired characters halve DP loss from failed checks'},
+                    {name:'Skillful Explanations',description:'Once per short rest, allow inspired character to re-roll failed skill check you are proficient in'}
+                ],
+                modification: [
+                    {name:'Armorer',description:'During long rest, grant one armor +1 AC until next rest'},
+                    {name:'Chem Thrower',description:'During long rest, grant line/cone weapon +5m range'},
+                    {name:'Comms Tech',description:'Team radio range 20km (not 5km), balloon duration 15d6 hours'},
+                    {name:'Grenadier',description:'Your grenades deal +1d6 damage'},
+                    {name:'Longarm Calibrations',description:'During long rest, grant longarm +1d4 to attack at long range'},
+                    {name:'Minefield Expert',description:'Bury explosives as mines, advantage to spot mines'},
+                    {name:'Montage',description:'Reduce R&D successes needed by half proficiency bonus'},
+                    {name:'Percussive Maintenance',description:'Machines you grant temp HP to heal +1d6 additional temp HP'},
+                    {name:'Sidearm Calibrations',description:'During long rest, grant sidearm +1 to attack and damage'}
+                ],
+                procedure: [
+                    {name:'Biohazard Disposal',description:'Team proficient in Constitution saves vs disease/toxins/viruses'},
+                    {name:'Controlled Stimulants',description:'Use Med Kit to heal 1d4 exhaustion (once per rest per character)'},
+                    {name:'Crash Training',description:'Use Med Kit to revive dead character (DC 25 Medicine, once per round)'},
+                    {name:'Embolism',description:'Melee attack deals 1d3 Constitution damage'},
+                    {name:'Improvised Medicine',description:'Heal without Med Kit but target not proficient with'},
+                    {name:'Pharmaceuticals',description:'Heal 1d4 Int/Wis/Cha damage during short rest'},
+                    {name:'Sedatives',description:'Melee attack causes unconsciousness (Con save or 1d6 fatigue levels)'},
+                    {name:'Urgent Care',description:'Replace all healing dice rolled with tension dice'},
+                    {name:'Vital Organ Trauma',description:'Add Wisdom modifier to critical hit damage'}
+                ],
+                discovery: [
+                    {name:'A Moments Thought',description:'During rest, spend Eureka to re-roll failed Int/Wis check'},
+                    {name:'Archaeologist',description:'Action to spend Eureka and find secret rooms, advantage on finding hidden architecture'},
+                    {name:'Astronomer',description:'Bonus action to reduce Stargate activation by 1 round per Eureka'},
+                    {name:'Biologist',description:'Action to spend Eureka points to heal 1d6 per point'},
+                    {name:'Chemist',description:'Research Kit ranged attack deals 1d6 acid per Eureka (increases with level)'},
+                    {name:'Geologist',description:'Reaction to spend Eureka and negate natural cover'},
+                    {name:'Hyper-Focus',description:'Spend Eureka to add tension die to Int/Wis check'},
+                    {name:'Physicist',description:'Spend Eureka to increase weapon range by 50%'},
+                    {name:'Social Sciences',description:'Gain 1 Eureka when losing Determination Points'}
+                ],
+                tactic: [
+                    {name:'Ambush',description:'Team gains advantage on first melee attack after rest'},
+                    {name:'Assault Coordination',description:'Next ranged attack by teammate after you hit deals +1d6'},
+                    {name:'Coordinated Response',description:'Team can use your initiative result'},
+                    {name:'Defensive Posture',description:'Allies within 2m gain +2 AC'},
+                    {name:'Distracting Attacks',description:'Target has disadvantage vs chosen ally not within 2m'},
+                    {name:'Hit and Run',description:'Bonus action to let ally Disengage'},
+                    {name:'Overwatchers',description:'90° overwatch field (not 45°), make 2 attacks'},
+                    {name:'Response Shot',description:'Once per encounter, reaction attack when enemy attacks ally'},
+                    {name:'Rush',description:'Bonus action to let ally Dash'}
+                ]
             },
 
             races: {
                 'Human': {
-                    'Standard Human': {hp:10,ab:{t:'choice',o:['intelligence','charisma'],v:2},a:['Recovery: Regain +TD HP on short rest','Galactic Seeds: Advantage on Persuasion/Deception during first contact'],p:{skills:{t:'choice',c:2}}},
-                    'Abydonian': {hp:10,ab:{t:'choice',o:['constitution','charisma'],v:2},a:['Recovery: Regain +TD HP on short rest','Free from Ra: Advantage on saves against Goa\'uld technology'],p:{skills:{t:'choice',c:1},weapons:{t:'choice',c:1}}},
-                    'Tollan': {hp:8,ab:{t:'choice',o:['intelligence','wisdom'],v:2},a:['Phase-Shift: Add phase device to base kit','Advanced Technology: +TD to Engineering checks for Tech Level 4+'],p:{skills:{t:'mixed',f:['Science'],ac:{c:1}}}}
+                    subraces: {
+                        'Standard Human': {hp:10,ab:{t:'choice',o:['intelligence','charisma'],v:2},a:['Recovery: Regain +TD HP on short rest','Galactic Seeds: Advantage on Persuasion/Deception during first contact'],p:{skills:{t:'choice',c:2}}},
+                        'Abydonian': {hp:10,ab:{t:'choice',o:['constitution','charisma'],v:2},a:['Recovery: Regain +TD HP on short rest','Free from Ra: Advantage on saves against Goa\'uld technology'],p:{skills:{t:'choice',c:1},weapons:{t:'choice',c:1}}},
+                        'Tollan': {hp:8,ab:{t:'choice',o:['intelligence','wisdom'],v:2},a:['Phase-Shift: Add phase device to base kit','Advanced Technology: +TD to Engineering checks for Tech Level 4+'],p:{skills:{t:'mixed',f:['Science'],ac:{c:1}}}}
+                    }
                 },
                 'Jaffa': {
-                    'Jaffa (With Symbiote)': {hp:12,ab:{t:'choice',o:['strength','dexterity'],v:2},a:['Symbiote: Advantage on physical saves (once per Proficiency bonus per long rest)','Kelno\'reem: Heal damage as if HD rolled max during long rest','Proficiency with Jaffa weapons'],p:{weapons:{t:'fixed',l:['Jaffa Weapons']},skills:{t:'choice',c:1}}},
-                    'Free Jaffa (Tretonin)': {hp:10,ab:{t:'choice',o:['dexterity','wisdom'],v:2},a:['Resistance Training: Half proficiency bonus to attack rolls with non-proficient weapons','Tretonin Prescription: Advantage on saves vs disease, suffer 1d4 Con damage daily without drug','Proficiency with Jaffa weapons'],p:{weapons:{t:'fixed',l:['Jaffa Weapons']},skills:{t:'choice',c:1}}}
+                    subraces: {
+                        'Jaffa (With Symbiote)': {hp:12,ab:{t:'choice',o:['strength','dexterity'],v:2},a:['Symbiote: Advantage on physical saves (once per Proficiency bonus per long rest)','Kelno\'reem: Heal damage as if HD rolled max during long rest','Proficiency with Jaffa weapons'],p:{weapons:{t:'fixed',l:['Jaffa Weapons']},skills:{t:'choice',c:1}}},
+                        'Free Jaffa (Tretonin)': {hp:10,ab:{t:'choice',o:['dexterity','wisdom'],v:2},a:['Resistance Training: Half proficiency bonus to attack rolls with non-proficient weapons','Tretonin Prescription: Advantage on saves vs disease, suffer 1d4 Con damage daily without drug','Proficiency with Jaffa weapons'],p:{weapons:{t:'fixed',l:['Jaffa Weapons']},skills:{t:'choice',c:1}}}
+                    }
                 },
                 'Aturen': {
-                    'Standard Aturen': {hp:10,ab:{t:'choice',o:['wisdom','charisma'],v:2},a:['Natural Resilience: Advantage on saves against disease or poison','Naturalist: Add +TD to Science checks involving ecosystems and creatures'],p:{skills:{t:'choice',c:2}}},
-                    'Noxian Pacifist': {hp:8,ab:{t:'choice',o:['constitution','charisma'],v:2},a:['Pacifist: Cannot willingly harm living creatures or take attack actions','Invisibility: Become invisible for 1 minute as action (Prof bonus times per long rest)','Natural Resilience: Advantage on saves against disease or poison','Naturalist: Add +TD to Science checks involving ecosystems and creatures'],p:{skills:{t:'choice',c:2}}}
+                    subraces: {
+                        'Standard Aturen': {hp:10,ab:{t:'choice',o:['wisdom','charisma'],v:2},a:['Natural Resilience: Advantage on saves against disease or poison','Naturalist: Add +TD to Science checks involving ecosystems and creatures'],p:{skills:{t:'choice',c:2}}},
+                        'Noxian Pacifist': {hp:8,ab:{t:'choice',o:['constitution','charisma'],v:2},a:['Pacifist: Cannot willingly harm living creatures or take attack actions','Invisibility: Become invisible for 1 minute as action (Prof bonus times per long rest)','Natural Resilience: Advantage on saves against disease or poison','Naturalist: Add +TD to Science checks involving ecosystems and creatures'],p:{skills:{t:'choice',c:2}}}
+                    }
                 },
                 'Tok\'ra': {
-                    'Tok\'ra (Egeria\'s Line)': {hp:10,ab:{t:'choice',o:['intelligence','wisdom'],v:2},a:['Synergistic Symbiote: Advantage on mental saves (once per Wis mod per long rest)','Regeneration: Heal to full HP during long rest','Genetic Memory: Access to centuries of knowledge','Naquadah in blood: Can use Goa\'uld/Tok\'ra technology'],p:{skills:{t:'choice',c:2}}},
-                    'Pangaran Tok\'ra': {hp:10,ab:{t:'choice',o:['charisma','wisdom'],v:2},a:['Shrewd Diplomats: Use Int or Wis instead of Cha for Persuasion','Regeneration: Heal to full HP during long rest','No genetic memory (created with flaw)'],p:{skills:{t:'choice',c:2}}}
+                    subraces: {
+                        'Tok\'ra (Egeria\'s Line)': {hp:10,ab:{t:'choice',o:['intelligence','wisdom'],v:2},a:['Synergistic Symbiote: Advantage on mental saves (once per Wis mod per long rest)','Regeneration: Heal to full HP during long rest','Genetic Memory: Access to centuries of knowledge','Naquadah in blood: Can use Goa\'uld/Tok\'ra technology'],p:{skills:{t:'choice',c:2}}},
+                        'Pangaran Tok\'ra': {hp:10,ab:{t:'choice',o:['charisma','wisdom'],v:2},a:['Shrewd Diplomats: Use Int or Wis instead of Cha for Persuasion','Regeneration: Heal to full HP during long rest','No genetic memory (created with flaw)'],p:{skills:{t:'choice',c:2}}}
+                    }
                 },
                 'Unas': {
-                    'Standard Unas': {hp:14,ab:{t:'choice',o:['strength','constitution'],v:2},a:['Impressive Resilience: Gain damage resistance for TD rounds (once per long rest)','Robust: +4 Str for lifting/carrying, advantage on related Str checks','Claws: Natural weapons deal 1d6 damage'],p:{skills:{t:'choice',c:2}}},
-                    'Unchained Unas': {hp:14,ab:{t:'choice',o:['strength','constitution'],v:2},a:['Impressive Resilience: Gain damage resistance for TD rounds (once per long rest)','Underestimated: Advantage on checks to conceal truth from non-Unas','Claws: Natural weapons deal 1d6 damage'],p:{skills:{t:'choice',c:2}}}
+                    subraces: {
+                        'Standard Unas': {hp:14,ab:{t:'choice',o:['strength','constitution'],v:2},a:['Impressive Resilience: Gain damage resistance for TD rounds (once per long rest)','Robust: +4 Str for lifting/carrying, advantage on related Str checks','Claws: Natural weapons deal 1d6 damage'],p:{skills:{t:'choice',c:2}}},
+                        'Unchained Unas': {hp:14,ab:{t:'choice',o:['strength','constitution'],v:2},a:['Impressive Resilience: Gain damage resistance for TD rounds (once per long rest)','Underestimated: Advantage on checks to conceal truth from non-Unas','Claws: Natural weapons deal 1d6 damage'],p:{skills:{t:'choice',c:2}}}
+                    }
                 }
             },
 
@@ -96,8 +156,51 @@
             },
 
             origins: {
-                biome: ['Lunar|Dexterity +1|Eager Astronomer: Advantage on Science checks pertaining to astronomy','Arboreal|Strength +1|Natural Climber: Climb speed of 6m','Mountainous|Strength +1|Vertical Drop: Half falling damage','Artificial|Wisdom +1|Life or Death Repairs: Advantage on engineering when failure would deal damage','Oceanic|Wisdom +1|Gifted Swimmer: Swim speed of 6m','Desert|Charisma +1|Heat Acclimated: Resistance to fire damage','Rainforest|Charisma +1|Tropics Adept: No disadvantage from rain or fog','Grasslands|Constitution +1|Natural Sprinter: +1m movement speed','Starship|Dexterity +1|Void Adept: Use Wis for Science checks','Terraformed|Intelligence +1|Strange World: 1/day reaction for advantage on save','Swamp|Wisdom +1|Patient Hunter: Use Wis for Stealth checks','Toxic|Constitution +1|Toxic Resistance: Resist poison or necrotic (choose one)','Urban|Intelligence +1|Melting Pot: Use Cha for Culture checks','Tundra|Constitution +1|Cold Acclimated: Resistance to cold damage','Volcanic|Strength +1|Heat Acclimated: Resistance to fire damage','Subterranean|Dexterity +1|Improved Vision: Dim light counts as bright'].map(s => {const [n,at,ab] = s.split('|'); return {name:n,attribute:at,ability:ab}}),
-                background: ['Enforcement|Intimidation|Air of Authority: Others have disadvantage to intimidate you','Aviator|Pilot|Crash Landing: Resistance to damage when vehicle crashes','Driver|Animal Handling|Speedster: Vehicles/animals you control gain +1 AC','Enslaved|Tool|Friend to Toil: Suffer 1 less exhaustion level (min 1)','Former Host|None|Naquadah Blooded: Can use Goa\'uld tech, advantage vs symbiotes','Entertainer|Performance|Zeitgeist: Use Cha for art/performance understanding','Freedom Fighter|Stealth|Last Resorts: Disadvantage on Moxie, advantage on Initiative','Healer|Medicine|Soothe: Team heals +Prof bonus on rest','Military|Weapon,Armor|Drills: +1 HP per level','Herdsman|Animal Handling|Beastfriend: Use Cha instead of Wis for Animal Handling','Preservationist|Nature|Eye for Nature: Advantage on checks to identify plants','Hunter/Gatherer|Survival|Irongut: Advantage vs poison','Politician|Persuasion|Two Faces: Use Int instead of Cha for Deception','Liaison|Culture|Stranger to the Land: Advantage on Cha checks to hide foreign nature','Refugee|Athletics|New Environments: Advantage on Athletics in unknown wilderness','Merchant|Insight|Efficient Logistics: +1 bulk capacity','Sailor|Acrobatics|Sea Legs: Advantage to maintain balance','Swindler|Deception|Low Profile: Use Deception for Stealth in populated areas','Scholar|Science|Preserve Knowledge: Advantage on Persuasion with scholars','Teacher|Insight|Patient Approach: 1/mission use Wis save instead of another','Sentry|Perception|Long Night: Ignore first night without rest','Wright|Engineering|Measure Twice: Half prof bonus on non-proficient tools','Sleuth|Investigation|The Reveal: Advantage on Persuasion to accuse wrongdoing','Underworld|Sleight of Hand|Black Market: Advantage contacting underworld members','Student|Perception|Quick Study: 1/mission use Int save instead of another'].map(s => {const [n,p,ab] = s.split('|'); return {name:n,proficiency:p.includes(',') ? {type:'choice',options:p.split(',')} : p,ability:ab}}),
+                biome: [
+                    {name:'Lunar',attribute:'Dexterity +1',ability:'Eager Astronomer: Advantage on Science checks pertaining to astronomy'},
+                    {name:'Arboreal',attribute:'Strength +1',ability:'Natural Climber: Climb speed of 6m'},
+                    {name:'Mountainous',attribute:'Strength +1',ability:'Vertical Drop: Half falling damage'},
+                    {name:'Artificial',attribute:'Wisdom +1',ability:'Life or Death Repairs: Advantage on engineering when failure would deal damage'},
+                    {name:'Oceanic',attribute:'Wisdom +1',ability:'Gifted Swimmer: Swim speed of 6m'},
+                    {name:'Desert',attribute:'Charisma +1',ability:'Heat Acclimated: Resistance to fire damage'},
+                    {name:'Rainforest',attribute:'Charisma +1',ability:'Tropics Adept: No disadvantage from rain or fog'},
+                    {name:'Grasslands',attribute:'Constitution +1',ability:'Natural Sprinter: +1m movement speed'},
+                    {name:'Starship',attribute:'Dexterity +1',ability:'Void Adept: Use Wis for Science checks'},
+                    {name:'Terraformed',attribute:'Intelligence +1',ability:'Strange World: 1/day reaction for advantage on save'},
+                    {name:'Swamp',attribute:'Wisdom +1',ability:'Patient Hunter: Use Wis for Stealth checks'},
+                    {name:'Toxic',attribute:'Constitution +1',ability:'Toxic Resistance: Resist poison or necrotic (choose one)'},
+                    {name:'Urban',attribute:'Intelligence +1',ability:'Melting Pot: Use Cha for Culture checks'},
+                    {name:'Tundra',attribute:'Constitution +1',ability:'Cold Acclimated: Resistance to cold damage'},
+                    {name:'Volcanic',attribute:'Strength +1',ability:'Heat Acclimated: Resistance to fire damage'},
+                    {name:'Subterranean',attribute:'Dexterity +1',ability:'Improved Vision: Dim light counts as bright'}
+                ],
+                background: [
+                    {name:'Enforcement',proficiency:'Intimidation',ability:'Air of Authority: Others have disadvantage to intimidate you'},
+                    {name:'Aviator',proficiency:'Pilot',ability:'Crash Landing: Resistance to damage when vehicle crashes'},
+                    {name:'Driver',proficiency:'Animal Handling',ability:'Speedster: Vehicles/animals you control gain +1 AC'},
+                    {name:'Enslaved',proficiency:{type:'choice',options:['Tool']},ability:'Friend to Toil: Suffer 1 less exhaustion level (min 1)'},
+                    {name:'Former Host',proficiency:'None',ability:'Naquadah Blooded: Can use Goa\'uld tech, advantage vs symbiotes'},
+                    {name:'Entertainer',proficiency:'Performance',ability:'Zeitgeist: Use Cha for art/performance understanding'},
+                    {name:'Freedom Fighter',proficiency:'Stealth',ability:'Last Resorts: Disadvantage on Moxie, advantage on Initiative'},
+                    {name:'Healer',proficiency:'Medicine',ability:'Soothe: Team heals +Prof bonus on rest'},
+                    {name:'Military',proficiency:{type:'choice',options:['Weapon','Armor']},ability:'Drills: +1 HP per level'},
+                    {name:'Herdsman',proficiency:'Animal Handling',ability:'Beastfriend: Use Cha instead of Wis for Animal Handling'},
+                    {name:'Preservationist',proficiency:'Nature',ability:'Eye for Nature: Advantage on checks to identify plants'},
+                    {name:'Hunter/Gatherer',proficiency:'Survival',ability:'Irongut: Advantage vs poison'},
+                    {name:'Politician',proficiency:'Persuasion',ability:'Two Faces: Use Int instead of Cha for Deception'},
+                    {name:'Liaison',proficiency:'Culture',ability:'Stranger to the Land: Advantage on Cha checks to hide foreign nature'},
+                    {name:'Refugee',proficiency:'Athletics',ability:'New Environments: Advantage on Athletics in unknown wilderness'},
+                    {name:'Merchant',proficiency:'Insight',ability:'Efficient Logistics: +1 bulk capacity'},
+                    {name:'Sailor',proficiency:'Acrobatics',ability:'Sea Legs: Advantage to maintain balance'},
+                    {name:'Swindler',proficiency:'Deception',ability:'Low Profile: Use Deception for Stealth in populated areas'},
+                    {name:'Scholar',proficiency:'Science',ability:'Preserve Knowledge: Advantage on Persuasion with scholars'},
+                    {name:'Teacher',proficiency:'Insight',ability:'Patient Approach: 1/mission use Wis save instead of another'},
+                    {name:'Sentry',proficiency:'Perception',ability:'Long Night: Ignore first night without rest'},
+                    {name:'Wright',proficiency:'Engineering',ability:'Measure Twice: Half prof bonus on non-proficient tools'},
+                    {name:'Sleuth',proficiency:'Investigation',ability:'The Reveal: Advantage on Persuasion to accuse wrongdoing'},
+                    {name:'Underworld',proficiency:'Sleight of Hand',ability:'Black Market: Advantage contacting underworld members'},
+                    {name:'Student',proficiency:'Perception',ability:'Quick Study: 1/mission use Int save instead of another'}
+                ],
                 racial: {
                     'Human': [{name:'Tau\'ri Military',attribute:'None',proficiency:{type:'choice',options:['Martial Arts','Longarms','Heavy Armor']},ability:'Basic Training: Chosen proficiency from military service'}],
                     'Jaffa': [{name:'Jaffa Renegade',attribute:'Wisdom +1',ability:'Rebel: Advantage on saves vs Goa\'uld and Jaffa'},{name:'Student of Bra\'tac',attribute:'Dexterity +1',ability:'Ma\'tok Mastery: Ma\'tok gains finesse property'}],
@@ -150,34 +253,6 @@
         const pointBuyCost = {8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9};
         const getPointsSpent = () => Object.values(state.character.abilityScores).reduce((sum, score) => sum + (pointBuyCost[score] || 0), 0);
 
-        // Template helpers
-        const el = (tag, attrs, children) => {
-            const attributes = Object.entries(attrs || {}).map(([k, v]) => `${k}="${v}"`).join(' ');
-            return `<${tag} ${attributes}>${children || ''}</${tag}>`;
-        };
-
-        const btn = (data, classes, content, disabled = false) => {
-            const dataAttrs = Object.entries(data || {}).map(([k, v]) => `data-${k}="${v}"`).join(' ');
-            return el('button', {
-                class: classes,
-                ...disabled && {disabled: 'disabled'}
-            }, content) + (dataAttrs ? `<script>document.currentScript.previousElementSibling.setAttribute('${dataAttrs.split(' ')[0]}', '${dataAttrs.split('"')[1]}')</script>` : '');
-        };
-
-        const btnClasses = (selected, enabled = true, special = '') => {
-            const base = 'transition-all';
-            if (special) return `${base} ${special}`;
-            if (selected) return `${base} border-2 ${enabled ? 'border-blue-500 bg-blue-500/20 text-white' : 'border-gray-600 bg-gray-800 opacity-50'}`;
-            return `${base} border-2 ${enabled ? 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500' : 'border-gray-600 bg-gray-800 opacity-50 cursor-not-allowed'}`;
-        };
-
-        const section = (title, content, classes = 'bg-gray-700/50') => 
-            el('div', {class: `${classes} rounded-lg p-4`}, content);
-
-        const grid = (cols, content, gap = 3) => 
-            el('div', {class: `grid grid-cols-${cols.split('/').join(' md:grid-cols-')} gap-${gap}`}, content);
-
-        // Complex utility functions
         const getAllSkillProficiencies = () => {
             const skills = [];
             const c = state.character;
@@ -186,7 +261,7 @@
                 gameData.classes[c.class].p.sk.forEach(s => skills.push({skill:s, source:'Class'}));
             }
             
-            const rd = gameData.races[c.race]?.[c.subrace];
+            const rd = gameData.races[c.race]?.subraces?.[c.subrace];
             if (rd?.p?.skills) {
                 if (rd.p.skills.t === 'mixed' && rd.p.skills.f) {
                     rd.p.skills.f.forEach(s => skills.push({skill:s, source:'Race'}));
@@ -238,7 +313,7 @@
         const getAbilityBonuses = ability => {
             let racial = 0, origin = 0, asi = 0;
             const c = state.character;
-            const rd = gameData.races[c.race]?.[c.subrace];
+            const rd = gameData.races[c.race]?.subraces?.[c.subrace];
             
             if (rd?.ab?.t === 'choice' && c.abilityChoice === ability) racial = rd.ab.v;
             
@@ -272,7 +347,7 @@
 
         const updateDerivedStats = () => {
             const c = state.character;
-            const rd = gameData.races[c.race]?.[c.subrace];
+            const rd = gameData.races[c.race]?.subraces?.[c.subrace];
             const cd = gameData.classes[c.class];
             const fs = getFinalAbilityScores();
             const mods = Object.fromEntries(Object.entries(fs).map(([k,v]) => [k, getModifier(v)]));
@@ -289,100 +364,11 @@
             c.determinationPoints = Math.floor((c.level + 4) / 5) * 2 + (cd?.db || 0);
         };
 
-        // Rendering functions
-        const renderSelectionGrid = (items, type, cols = '2/3', selected = () => false, enabled = () => true) => {
-            return grid(cols, items.map(item => {
-                const data = typeof item === 'object' ? item : {name: item};
-                const isSelected = selected(data);
-                const isEnabled = enabled(data);
-                const attrs = {[`data-${type}`]: data.name};
-                
-                return el('button', {
-                    ...Object.fromEntries(Object.entries(attrs).map(([k,v]) => [k.replace('data-','data-'), v])),
-                    class: `${type}-btn p-3 rounded-lg ${btnClasses(isSelected, isEnabled)}`
-                }, `
-                    <div class="font-semibold">${data.name}</div>
-                    ${data.subtitle ? `<div class="text-xs mt-1 opacity-75">${data.subtitle}</div>` : ''}
-                `);
-            }).join(''));
-        };
-
-        const renderSkillGrid = (skills, selectedSkills, max, prefix) => {
-            return grid('3/4', skills.map(skill => {
-                const isSelected = selectedSkills?.includes(skill);
-                const maxReached = (selectedSkills?.length || 0) >= max;
-                
-                return el('button', {
-                    [`data-${prefix}`]: skill,
-                    class: `${prefix}-btn p-2 rounded text-xs ${btnClasses(isSelected, !maxReached || isSelected)}`
-                }, skill);
-            }).join(''), 2);
-        };
-
-        const renderFeats = () => {
-            const c = state.character;
-            const cd = gameData.classes[c.class];
-            if (!cd?.fc) return '';
-            
-            let required = 0, type = null;
-            Object.entries(cd.fc).forEach(([lvl, choice]) => {
-                if (parseInt(lvl) <= c.level) {
-                    required += choice.c;
-                    type = choice.t;
-                }
-            });
-            
-            if (!required) return '';
-            
-            const feats = type === 'fieldHack' ? gameData.fieldHackFeats : gameData.classFeatsByType[type];
-            
-            return section('Class Feat Selection', `
-                <div id="toggle-feats" class="flex items-center justify-between cursor-pointer">
-                    <h3 class="text-lg font-semibold text-gray-300 flex items-center gap-2">
-                        ${icons.sparkles} Class Feat Selection
-                    </h3>
-                    <span class="${state.showClassFeats ? 'rotate-180' : ''} transition-transform">${icons.chevronDown}</span>
-                </div>
-                ${state.showClassFeats ? `
-                    <p class="text-sm text-gray-400 mb-4 mt-3">
-                        Select ${required} ${type === 'fieldHack' ? 'Field Hack' : type} feat${required > 1 ? 's' : ''}
-                    </p>
-                    <div class="space-y-2">
-                        ${feats.map(feat => {
-                            const selected = c.classFeats.includes(feat.name);
-                            const canSel = c.classFeats.length < required && !selected;
-                            const meets = canSelectFieldHack(feat);
-                            
-                            return el('button', {
-                                'data-feat': feat.name,
-                                class: `feat-btn w-full text-left p-3 rounded border ${
-                                    selected ? 'border-purple-500 bg-purple-500/20' :
-                                    !meets ? 'border-red-700 bg-red-900/20 opacity-60 cursor-not-allowed' :
-                                    canSel ? 'border-gray-600 bg-gray-800 hover:border-gray-500' :
-                                    'border-gray-700 bg-gray-900/50 opacity-50 cursor-not-allowed'
-                                }`,
-                                ...(!meets || (!canSel && !selected)) && {disabled: 'disabled'}
-                            }, `
-                                <div class="font-semibold text-sm text-white">
-                                    ${feat.name} ${!meets ? `<span class="text-xs text-red-400">${icons.lock} Requires ${feat.requirements}</span>` : ''}
-                                </div>
-                                <div class="text-xs text-gray-400 mt-1">${feat.description}</div>
-                                ${selected ? '<div class="text-purple-400">✓</div>' : ''}
-                            `);
-                        }).join('')}
-                    </div>
-                    <div class="mt-4 text-sm text-gray-400">Selected: ${c.classFeats.length}/${required}</div>
-                ` : ''}
-            `);
-        };
-
         const render = () => {
             updateDerivedStats();
             const c = state.character;
-            const rd = gameData.races[c.race]?.[c.subrace];
+            const rd = gameData.races[c.race]?.subraces?.[c.subrace];
             const cd = gameData.classes[c.class];
-            const fs = getFinalAbilityScores();
-            const ps = getPointsSpent();
             const dups = findDuplicateProficiencies();
             
             document.getElementById('app').innerHTML = `
@@ -397,190 +383,7 @@
                         </div>
                         
                         <div class="p-6 space-y-6">
-                            ${section('Character Name', `
-                                <input id="character-name" value="${c.name}" class="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white" placeholder="Enter character name..."/>
-                            `)}
-                            
-                            ${section('Select Race', renderSelectionGrid(
-                                Object.keys(gameData.races).map(r => ({
-                                    name: r,
-                                    subtitle: `${Object.keys(gameData.races[r]).length} variant(s)`
-                                })),
-                                'race', '2/3',
-                                item => c.race === item.name
-                            ))}
-                            
-                            ${c.race ? section('Select ' + c.race + ' Variant', 
-                                Object.entries(gameData.races[c.race]).map(([name, data]) => el('div', {
-                                    'data-subrace': name,
-                                    class: `subrace-btn p-4 rounded-lg border-2 cursor-pointer ${btnClasses(c.subrace === name)}`
-                                }, `
-                                    <div class="font-semibold text-white mb-2">${name}</div>
-                                    <div class="text-xs text-gray-400">HP: +${data.hp} | ${
-                                        data.ab.t === 'choice' ? 
-                                        `Choose +${data.ab.v} to ${data.ab.o.join('/')}` : 
-                                        'Fixed bonuses'
-                                    }</div>
-                                    <ul class="text-xs text-gray-400 mt-2">
-                                        ${data.a.map(a => `<li>• ${a}</li>`).join('')}
-                                    </ul>
-                                `)).join('')
-                            ) : ''}
-                            
-                            ${rd?.ab?.t === 'choice' && !c.abilityChoice ? section('Choose Ability Score Increase', 
-                                grid('2/3', rd.ab.o.map(a => el('button', {
-                                    'data-ability-choice': a,
-                                    class: `ability-choice-btn p-3 rounded capitalize ${btnClasses(c.abilityChoice === a)}`
-                                }, a)), 2),
-                                'bg-yellow-500/20 border-2 border-yellow-500'
-                            ) : ''}
-                            
-                            ${rd?.p?.skills ? section('Choose Skills', 
-                                rd.p.skills.t === 'choice' ? 
-                                renderSkillGrid(gameData.skills, c.raceChoices.skills, rd.p.skills.c, 'race-skill') :
-                                rd.p.skills.t === 'mixed' ? `
-                                    <div class="mb-4">Fixed: ${rd.p.skills.f.join(', ')}</div>
-                                    ${rd.p.skills.ac ? renderSkillGrid(
-                                        gameData.skills.filter(s => !rd.p.skills.f.includes(s)),
-                                        c.raceChoices.additionalSkills, rd.p.skills.ac.c, 'additional-skill'
-                                    ) : ''}
-                                ` : ''
-                            ) : ''}
-                            
-                            ${section('Select Origins', `
-                                <p class="text-sm text-gray-400 mb-4">Choose 2 from different categories</p>
-                                ${['biome', 'background'].map(type => `
-                                    <div class="mb-4">
-                                        <h3 class="text-sm font-semibold text-gray-400 mb-2">${type[0].toUpperCase() + type.slice(1)}</h3>
-                                        ${grid('1/2/3', gameData.origins[type].map(o => {
-                                            const sel = c.origins.includes(o.name);
-                                            const hasType = c.origins.some(x => gameData.origins[type].find(y => y.name === x));
-                                            const dis = !sel && (c.origins.length >= 2 || hasType);
-                                            
-                                            return el('button', {
-                                                'data-origin': o.name,
-                                                'data-origin-type': type,
-                                                class: `origin-btn p-3 text-left rounded border ${btnClasses(sel, !dis)}`
-                                            }, `
-                                                <div class="font-semibold text-sm text-white">${o.name}</div>
-                                                <div class="text-xs text-green-400">${o.attribute || o.proficiency}</div>
-                                                <div class="text-xs text-gray-400">${o.ability}</div>
-                                            `);
-                                        }).join(''), 2)}
-                                    </div>
-                                `).join('')}
-                                ${c.race && gameData.origins.racial[c.race] ? `
-                                    <h3 class="text-sm font-semibold text-gray-400 mb-2">Racial Origins</h3>
-                                    ${grid('1/2', gameData.origins.racial[c.race].map(o => {
-                                        const sel = c.origins.includes(o.name);
-                                        return el('button', {
-                                            'data-origin': o.name,
-                                            'data-origin-type': 'racial',
-                                            class: `origin-btn p-3 text-left rounded border ${btnClasses(sel, c.origins.length < 2 || sel)}`
-                                        }, `
-                                            <div class="font-semibold text-sm text-white">${o.name}</div>
-                                            <div class="text-xs text-green-400">${o.attribute}</div>
-                                            <div class="text-xs text-gray-400">${o.ability}</div>
-                                        `);
-                                    }).join(''), 2)}
-                                ` : ''}
-                            `)}
-                            
-                            ${section('Select Class', renderSelectionGrid(
-                                Object.entries(gameData.classes).map(([name, data]) => ({
-                                    name,
-                                    subtitle: `HD: d${data.hd}, DP: +${data.db}`
-                                })),
-                                'class', '2/3',
-                                item => c.class === item.name
-                            ))}
-                            
-                            ${cd ? section('Class Info', grid('1/2', [
-                                ['Combat', `HD: d${cd.hd}, HP/Lvl: ${cd.hpl}+Con, Det: +${cd.db}`],
-                                ['Saves', cd.p.sv.join(', ')],
-                                ['Armor', cd.p.a.join(', ')],
-                                ['Weapons', cd.p.w.join(', ')],
-                                ['Tools', cd.p.t.join(', ')],
-                                ['Skills', cd.p.sk.join(', ')]
-                            ].map(([title, content]) => 
-                                el('div', {class: 'bg-gray-800 rounded p-3'}, `
-                                    <div class="text-xs font-semibold text-purple-400 mb-1">${title}</div>
-                                    <div class="text-xs text-gray-300">${content}</div>
-                                `)
-                            ).join(''), 3)) : ''}
-                            
-                            ${section('Character Level', grid('5', [1,2,3,4,5].map(lvl => 
-                                el('button', {
-                                    'data-level': lvl,
-                                    class: `level-btn px-3 py-2 rounded-lg border-2 text-sm ${btnClasses(c.level === lvl)}`
-                                }, lvl)
-                            ).join(''), 2))}
-                            
-                            ${renderFeats()}
-                            
-                            ${dups.length ? section('Duplicate Proficiencies', 
-                                dups.map((dup, i) => `
-                                    <div class="mb-4">
-                                        <label class="text-sm text-yellow-100">Replace ${dup.skill} (from ${dup.source})</label>
-                                        ${renderSkillGrid(
-                                            gameData.skills.filter(s => !getFinalSkillProficiencies().includes(s) || c.duplicateProficiencyChoices[`dup_${i}`] === s),
-                                            [c.duplicateProficiencyChoices[`dup_${i}`]],
-                                            1,
-                                            `duplicate-${i}`
-                                        )}
-                                    </div>
-                                `).join(''),
-                                'bg-yellow-500/20 border-2 border-yellow-500'
-                            ) : ''}
-                            
-                            ${section('Ability Scores', `
-                                <div class="flex justify-between mb-4">
-                                    <span class="text-sm text-gray-300">Point Buy</span>
-                                    <span class="${ps > 27 ? 'text-red-300' : 'text-green-300'} text-sm">Points: ${ps}/27</span>
-                                </div>
-                                ${grid('2/3', Object.entries(c.abilityScores).map(([ability, score]) => {
-                                    const {racial, origin, asi} = getAbilityBonuses(ability);
-                                    const bonus = racial + origin + asi;
-                                    const final = score + bonus;
-                                    return el('div', {class: 'bg-gray-800 rounded-lg p-3'}, `
-                                        <div class="flex justify-between mb-2">
-                                            <span class="text-xs text-gray-400 capitalize">${ability}</span>
-                                            <span class="text-xs text-blue-300">Final: ${final} (${getModifier(final) >= 0 ? '+' : ''}${getModifier(final)})</span>
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <button data-ability="${ability}" data-action="decrease" class="ability-btn w-8 h-8 bg-gray-700 rounded ${score <= 8 ? 'opacity-50' : 'hover:bg-gray-600'}" ${score <= 8 ? 'disabled' : ''}>-</button>
-                                            <div class="flex-1 text-center">
-                                                <div class="text-lg font-bold text-white">${score}</div>
-                                                ${bonus ? `<div class="text-xs text-green-400">+${bonus}</div>` : ''}
-                                            </div>
-                                            <button data-ability="${ability}" data-action="increase" class="ability-btn w-8 h-8 bg-gray-700 rounded ${score >= 15 || ps >= 27 ? 'opacity-50' : 'hover:bg-gray-600'}" ${score >= 15 || ps >= 27 ? 'disabled' : ''}>+</button>
-                                        </div>
-                                    `);
-                                }).join(''), 4)}
-                            `)}
-                            
-                            ${section('Combat Stats', grid('2/3', [
-                                ['Hit Points', c.hp, icons.heart, 'text-red-400'],
-                                ['Armor Class', c.armorClass, icons.shield, 'text-blue-400'],
-                                ['Initiative', `${c.initiative >= 0 ? '+' : ''}${c.initiative}`, icons.zap, 'text-yellow-400'],
-                                ['Determination', c.determinationPoints, icons.brain, 'text-purple-400'],
-                                ['Speed', `${c.speed}m`, icons.activity, 'text-green-400'],
-                                ['Moxie', `${c.moxie >= 0 ? '+' : ''}${c.moxie}`, icons.user, 'text-cyan-400']
-                            ].map(([label, value, icon, color]) => 
-                                el('div', {class: 'bg-gray-800 rounded-lg p-3'}, `
-                                    <div class="flex items-center gap-2 ${color} mb-1">
-                                        <span class="icon icon-md">${icon}</span>
-                                        <span class="text-xs">${label}</span>
-                                    </div>
-                                    <div class="text-2xl font-bold text-white">${value}</div>
-                                `)
-                            ).join(''), 4))}
-                            
-                            <div class="flex justify-end">
-                                <button id="export-btn" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 flex items-center gap-2">
-                                    ${icons.download} Export Character Sheet
-                                </button>
-                            </div>
+                            ${renderSections()}
                         </div>
                     </div>
                 </div>
@@ -589,15 +392,296 @@
             attachEventListeners();
         };
 
+        const section = (title, content, highlight = false) => `
+            <div class="${highlight ? 'bg-yellow-500/20 border-2 border-yellow-500' : 'bg-gray-700/50'} rounded-lg p-4">
+                ${title ? `<label class="block text-sm font-medium ${highlight ? 'text-yellow-300' : 'text-gray-300'} mb-2">${title}</label>` : ''}
+                ${content}
+            </div>
+        `;
+
+        const renderSections = () => {
+            const c = state.character;
+            const rd = gameData.races[c.race]?.subraces?.[c.subrace];
+            const cd = gameData.classes[c.class];
+            const dups = findDuplicateProficiencies();
+            const ps = getPointsSpent();
+            
+            const sections = [];
+            
+            // Character name
+            sections.push(section('Character Name', `
+                <input id="character-name" value="${c.name}" class="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white" placeholder="Enter character name..."/>
+            `));
+            
+            // Race selection
+            sections.push(section('Select Race', `
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    ${Object.keys(gameData.races).map(race => `
+                        <button data-race="${race}" class="race-btn p-3 rounded-lg border-2 transition-all ${
+                            c.race === race ? 'border-blue-500 bg-blue-500/20 text-white' : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
+                        }">
+                            <div class="font-semibold">${race}</div>
+                            <div class="text-xs mt-1 opacity-75">${Object.keys(gameData.races[race].subraces).length} variant(s)</div>
+                        </button>
+                    `).join('')}
+                </div>
+            `));
+            
+            // Subrace selection
+            if (c.race) {
+                sections.push(section(`Select ${c.race} Variant`, Object.entries(gameData.races[c.race].subraces).map(([name, data]) => `
+                    <div data-subrace="${name}" class="subrace-btn p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        c.subrace === name ? 'border-green-500 bg-green-500/20' : 'border-gray-600 bg-gray-800 hover:border-gray-500'
+                    }">
+                        <div class="font-semibold text-white mb-2">${name}</div>
+                        <div class="text-xs text-gray-400">
+                            HP: +${data.hp} | ${data.ab.t === 'choice' ? `Choose +${data.ab.v} to ${data.ab.o.join('/')}` : 'Fixed bonuses'}
+                        </div>
+                        <ul class="text-xs text-gray-400 mt-2">
+                            ${data.a.map(a => `<li>• ${a}</li>`).join('')}
+                        </ul>
+                    </div>
+                `).join('')));
+            }
+            
+            // Ability choice
+            if (rd?.ab?.t === 'choice' && !c.abilityChoice) {
+                sections.push(section('Choose ONE Ability Score Increase', `
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        ${rd.ab.o.map(a => `
+                            <button data-ability-choice="${a}" class="ability-choice-btn p-3 rounded capitalize transition-all font-semibold ${
+                                c.abilityChoice === a ? 'bg-purple-500/20 border-2 border-purple-500 text-white' : 'bg-gray-800 border-2 border-gray-600 text-gray-300 hover:border-gray-500'
+                            }">${a}</button>
+                        `).join('')}
+                    </div>
+                `, true));
+            }
+            
+            // Race proficiencies
+            if (rd?.p?.skills) {
+                const skillContent = rd.p.skills.t === 'choice' ? `
+                    <div class="grid grid-cols-3 md:grid-cols-4 gap-2">
+                        ${gameData.skills.map(s => {
+                            const sel = c.raceChoices.skills?.includes(s);
+                            const max = c.raceChoices.skills?.length >= rd.p.skills.c;
+                            return `<button data-race-skill="${s}" class="race-skill-btn p-2 rounded text-xs transition-all ${
+                                sel ? 'bg-green-500/20 border border-green-500 text-white' : 
+                                max && !sel ? 'bg-gray-800 border border-gray-600 text-gray-300 opacity-50' : 
+                                'bg-gray-800 border border-gray-600 text-gray-300 hover:border-gray-500'
+                            }">${s}</button>`;
+                        }).join('')}
+                    </div>
+                ` : rd.p.skills.t === 'mixed' ? `
+                    <div class="mb-4">Fixed: ${rd.p.skills.f.join(', ')}</div>
+                    ${rd.p.skills.ac ? `
+                        <div class="grid grid-cols-3 md:grid-cols-4 gap-2">
+                            ${gameData.skills.filter(s => !rd.p.skills.f.includes(s)).map(s => {
+                                const sel = c.raceChoices.additionalSkills?.includes(s);
+                                const max = c.raceChoices.additionalSkills?.length >= rd.p.skills.ac.c;
+                                return `<button data-additional-skill="${s}" class="additional-skill-btn p-2 rounded text-xs transition-all ${
+                                    sel ? 'bg-green-500/20 border border-green-500 text-white' : 
+                                    max && !sel ? 'bg-gray-800 border border-gray-600 text-gray-300 opacity-50' : 
+                                    'bg-gray-800 border border-gray-600 text-gray-300 hover:border-gray-500'
+                                }">${s}</button>`;
+                            }).join('')}
+                        </div>
+                    ` : ''}
+                ` : '';
+                
+                sections.push(section(`Choose ${rd.p.skills.c || 1} Skill Proficienc${rd.p.skills.c > 1 ? 'ies' : 'y'}`, skillContent));
+            }
+            
+            // Origins
+            sections.push(section('Select Origins (Choose 2 from different categories)', `
+                ${['biome', 'background'].map(type => `
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-400 mb-2">${type[0].toUpperCase() + type.slice(1)}</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                            ${gameData.origins[type].map(o => {
+                                const sel = c.origins.includes(o.name);
+                                const hasType = c.origins.some(x => gameData.origins[type].find(y => y.name === x));
+                                const dis = !sel && (c.origins.length >= 2 || hasType);
+                                return `
+                                    <button data-origin="${o.name}" data-origin-type="${type}" class="origin-btn p-3 text-left rounded border transition-all ${
+                                        sel ? 'border-blue-500 bg-blue-500/20' : 
+                                        dis ? 'border-gray-600 bg-gray-800 opacity-50' : 
+                                        'border-gray-600 bg-gray-800 hover:border-gray-500'
+                                    }">
+                                        <div class="font-semibold text-sm text-white">${o.name}</div>
+                                        <div class="text-xs text-green-400">${o.attribute || (typeof o.proficiency === 'string' ? o.proficiency : 'Choose')}</div>
+                                        <div class="text-xs text-gray-400">${o.ability}</div>
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `).join('')}
+            `));
+            
+            // Class selection
+            sections.push(section('Select Class', `
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    ${Object.entries(gameData.classes).map(([name, data]) => `
+                        <button data-class="${name}" class="class-btn p-3 rounded-lg border-2 transition-all ${
+                            c.class === name ? 'border-purple-500 bg-purple-500/20 text-white' : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
+                        }">
+                            <div class="font-semibold">${name}</div>
+                            <div class="text-xs mt-1 opacity-75">HD: d${data.hd}, DP: +${data.db}</div>
+                        </button>
+                    `).join('')}
+                </div>
+            `));
+            
+            // Level selection
+            sections.push(section('Character Level', `
+                <div class="grid grid-cols-5 gap-2">
+                    ${[1,2,3,4,5].map(lvl => `
+                        <button data-level="${lvl}" class="level-btn px-3 py-2 rounded-lg border-2 transition-all text-sm ${
+                            c.level === lvl ? 'border-green-500 bg-green-500/20 text-white' : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
+                        }">${lvl}</button>
+                    `).join('')}
+                </div>
+            `));
+            
+            // Class feats
+            if (cd?.fc) {
+                let req = 0, type = null;
+                Object.entries(cd.fc).forEach(([l, ch]) => {
+                    if (parseInt(l) <= c.level) {
+                        req += ch.c;
+                        type = ch.t;
+                    }
+                });
+                
+                if (req) {
+                    const feats = type === 'fieldHack' ? gameData.fieldHackFeats : gameData.classFeatsByType[type];
+                    sections.push(section('', `
+                        <div id="toggle-feats" class="flex items-center justify-between cursor-pointer">
+                            <h3 class="text-lg font-semibold text-gray-300 flex items-center gap-2">
+                                ${icons.sparkles} Class Feat Selection
+                            </h3>
+                            <span class="${state.showClassFeats ? 'rotate-180' : ''} transition-transform">${icons.chevronDown}</span>
+                        </div>
+                        ${state.showClassFeats ? `
+                            <p class="text-sm text-gray-400 mb-4 mt-3">Select ${req} ${type} feat${req > 1 ? 's' : ''}</p>
+                            <div class="space-y-2">
+                                ${feats.map(feat => {
+                                    const sel = c.classFeats.includes(feat.name);
+                                    const can = c.classFeats.length < req && !sel;
+                                    const meets = canSelectFieldHack(feat);
+                                    return `
+                                        <button data-feat="${feat.name}" class="feat-btn w-full text-left p-3 rounded border transition-all ${
+                                            sel ? 'border-purple-500 bg-purple-500/20' :
+                                            !meets ? 'border-red-700 bg-red-900/20 opacity-60 cursor-not-allowed' :
+                                            can ? 'border-gray-600 bg-gray-800 hover:border-gray-500' :
+                                            'border-gray-700 bg-gray-900/50 opacity-50 cursor-not-allowed'
+                                        }" ${!meets || (!can && !sel) ? 'disabled' : ''}>
+                                            <div class="font-semibold text-sm text-white">
+                                                ${feat.name} ${!meets ? `<span class="text-xs text-red-400">${icons.lock} Requires ${feat.requirements}</span>` : ''}
+                                            </div>
+                                            <div class="text-xs text-gray-400 mt-1">${feat.description}</div>
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
+                            <div class="mt-4 text-sm text-gray-400">Selected: ${c.classFeats.length}/${req}</div>
+                        ` : ''}
+                    `));
+                }
+            }
+            
+            // Duplicate proficiencies
+            if (dups.length) {
+                sections.push(section('Duplicate Skill Proficiencies', 
+                    dups.map((dup, i) => `
+                        <div class="mb-4">
+                            <label class="text-sm text-yellow-100">Replace ${dup.skill} (from ${dup.source})</label>
+                            <div class="grid grid-cols-3 md:grid-cols-4 gap-2">
+                                ${gameData.skills.map(s => {
+                                    const sel = c.duplicateProficiencyChoices[`dup_${i}`] === s;
+                                    const used = getFinalSkillProficiencies().includes(s) && !sel;
+                                    return `<button data-duplicate-key="dup_${i}" data-duplicate-skill="${s}" class="duplicate-btn p-2 rounded text-xs transition-all ${
+                                        sel ? 'bg-green-500/20 border border-green-500 text-white' :
+                                        used ? 'bg-gray-800 border border-gray-600 text-gray-500 opacity-50' :
+                                        'bg-gray-800 border border-gray-600 text-gray-300 hover:border-gray-500'
+                                    }" ${used ? 'disabled' : ''}>${s}</button>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `).join(''),
+                    true
+                ));
+            }
+            
+            // Ability scores
+            sections.push(section('Ability Scores (Point Buy)', `
+                <div class="flex justify-between mb-4">
+                    <span class="${ps > 27 ? 'text-red-300' : 'text-green-300'} text-sm">Points: ${ps}/27</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    ${Object.entries(c.abilityScores).map(([ability, score]) => {
+                        const {racial, origin, asi} = getAbilityBonuses(ability);
+                        const bonus = racial + origin + asi;
+                        const final = score + bonus;
+                        return `
+                            <div class="bg-gray-800 rounded-lg p-3">
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-xs text-gray-400 capitalize">${ability}</span>
+                                    <span class="text-xs text-blue-300">Final: ${final} (${getModifier(final) >= 0 ? '+' : ''}${getModifier(final)})</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button data-ability="${ability}" data-action="decrease" class="ability-btn w-8 h-8 bg-gray-700 rounded ${score <= 8 ? 'opacity-50' : 'hover:bg-gray-600'}" ${score <= 8 ? 'disabled' : ''}>-</button>
+                                    <div class="flex-1 text-center">
+                                        <div class="text-lg font-bold text-white">${score}</div>
+                                        ${bonus ? `<div class="text-xs text-green-400">+${bonus}</div>` : ''}
+                                    </div>
+                                    <button data-ability="${ability}" data-action="increase" class="ability-btn w-8 h-8 bg-gray-700 rounded ${score >= 15 || ps >= 27 ? 'opacity-50' : 'hover:bg-gray-600'}" ${score >= 15 || ps >= 27 ? 'disabled' : ''}>+</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `));
+            
+            // Combat stats
+            sections.push(section('Combat Statistics', `
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    ${[
+                        ['Hit Points', c.hp, icons.heart, 'text-red-400'],
+                        ['Armor Class', c.armorClass, icons.shield, 'text-blue-400'],
+                        ['Initiative', `${c.initiative >= 0 ? '+' : ''}${c.initiative}`, icons.zap, 'text-yellow-400'],
+                        ['Determination', c.determinationPoints, icons.brain, 'text-purple-400'],
+                        ['Speed', `${c.speed}m`, icons.activity, 'text-green-400'],
+                        ['Moxie', `${c.moxie >= 0 ? '+' : ''}${c.moxie}`, icons.user, 'text-cyan-400']
+                    ].map(([label, value, icon, color]) => `
+                        <div class="bg-gray-800 rounded-lg p-3">
+                            <div class="flex items-center gap-2 ${color} mb-1">
+                                <span class="icon icon-md">${icon}</span>
+                                <span class="text-xs">${label}</span>
+                            </div>
+                            <div class="text-2xl font-bold text-white">${value}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `));
+            
+            // Export button
+            sections.push(`
+                <div class="flex justify-end">
+                    <button id="export-btn" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 flex items-center gap-2">
+                        ${icons.download} Export Character Sheet
+                    </button>
+                </div>
+            `);
+            
+            return sections.join('');
+        };
+
         // Event listeners
         const attachEventListeners = () => {
-            const on = (selector, event, handler) => {
-                document.querySelectorAll(selector).forEach(el => el.addEventListener(event, handler));
-            };
+            const on = (sel, evt, fn) => document.querySelectorAll(sel).forEach(el => el.addEventListener(evt, fn));
             
-            document.getElementById('character-name')?.addEventListener('input', e => {
-                state.character.name = e.target.value;
-            });
+            document.getElementById('character-name')?.addEventListener('input', e => state.character.name = e.target.value);
             
             on('.race-btn', 'click', e => {
                 state.character.race = e.currentTarget.dataset.race;
@@ -620,30 +704,30 @@
             });
             
             on('.race-skill-btn', 'click', e => {
-                const skill = e.currentTarget.dataset.raceSkill;
+                const s = e.currentTarget.dataset.raceSkill;
                 const skills = state.character.raceChoices.skills || [];
-                const rd = gameData.races[state.character.race]?.[state.character.subrace];
-                const max = rd?.p?.skills?.c || 1;
+                const max = gameData.races[state.character.race]?.subraces?.[state.character.subrace]?.p?.skills?.c || 1;
                 
-                if (skills.includes(skill)) {
-                    state.character.raceChoices.skills = skills.filter(s => s !== skill);
+                if (skills.includes(s)) {
+                    state.character.raceChoices.skills = skills.filter(x => x !== s);
                 } else if (skills.length < max) {
-                    state.character.raceChoices.skills = [...skills, skill];
+                    state.character.raceChoices.skills = [...skills, s];
                 }
+                state.character.duplicateProficiencyChoices = {};
                 render();
             });
             
             on('.additional-skill-btn', 'click', e => {
-                const skill = e.currentTarget.dataset.additionalSkill;
+                const s = e.currentTarget.dataset.additionalSkill;
                 const skills = state.character.raceChoices.additionalSkills || [];
-                const rd = gameData.races[state.character.race]?.[state.character.subrace];
-                const max = rd?.p?.skills?.ac?.c || 1;
+                const max = gameData.races[state.character.race]?.subraces?.[state.character.subrace]?.p?.skills?.ac?.c || 1;
                 
-                if (skills.includes(skill)) {
-                    state.character.raceChoices.additionalSkills = skills.filter(s => s !== skill);
+                if (skills.includes(s)) {
+                    state.character.raceChoices.additionalSkills = skills.filter(x => x !== s);
                 } else if (skills.length < max) {
-                    state.character.raceChoices.additionalSkills = [...skills, skill];
+                    state.character.raceChoices.additionalSkills = [...skills, s];
                 }
+                state.character.duplicateProficiencyChoices = {};
                 render();
             });
             
@@ -656,17 +740,17 @@
                     c.origins = c.origins.filter(o => o !== name);
                     delete c.originChoices[name];
                 } else if (c.origins.length < 2) {
-                    const hasType = c.origins.some(o => 
-                        gameData.origins[type].find(x => x.name === o)
-                    );
+                    const hasType = c.origins.some(o => gameData.origins[type].find(x => x.name === o));
                     if (!hasType) c.origins.push(name);
                 }
+                state.character.duplicateProficiencyChoices = {};
                 render();
             });
             
             on('.class-btn', 'click', e => {
                 state.character.class = e.currentTarget.dataset.class;
                 state.character.classFeats = [];
+                state.character.duplicateProficiencyChoices = {};
                 render();
             });
             
@@ -681,13 +765,13 @@
                 const cd = gameData.classes[c.class];
                 let max = 0;
                 
-                Object.entries(cd.fc || {}).forEach(([lvl, choice]) => {
-                    if (parseInt(lvl) <= c.level) max += choice.c;
+                Object.entries(cd.fc || {}).forEach(([l, ch]) => {
+                    if (parseInt(l) <= c.level) max += ch.c;
                 });
                 
                 if (c.classFeats.includes(feat)) {
                     c.classFeats = c.classFeats.filter(f => f !== feat);
-                } else if (c.classFeats.length < max) {
+                } else if (c.classFeats.length < max && canSelectFieldHack({name:feat,requirements:gameData.fieldHackFeats.find(f=>f.name===feat)?.requirements})) {
                     c.classFeats.push(feat);
                 }
                 render();
@@ -708,12 +792,11 @@
                 render();
             });
             
-            [...Array(10)].forEach((_, i) => {
-                on(`.duplicate-${i}-btn`, 'click', e => {
-                    const skill = e.currentTarget.dataset[`duplicate${i}`];
-                    state.character.duplicateProficiencyChoices[`dup_${i}`] = skill;
-                    render();
-                });
+            on('.duplicate-btn', 'click', e => {
+                const key = e.currentTarget.dataset.duplicateKey;
+                const skill = e.currentTarget.dataset.duplicateSkill;
+                state.character.duplicateProficiencyChoices[key] = skill;
+                render();
             });
             
             document.getElementById('toggle-feats')?.addEventListener('click', () => {
