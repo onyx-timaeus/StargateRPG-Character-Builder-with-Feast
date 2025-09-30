@@ -1415,4 +1415,648 @@ ${Object.entries(c.abilityScoreImprovements).map(([key, value]) => {
                                         <div class="p-3 rounded border ${
                                             alreadyPurchased ? 'border-green-500 bg-green-500/10' :
                                             !meetsReqs ? 'border-red-600/50 bg-red-900/10 opacity-60' :
-                                            !canAfford ? 'border-gray-
+                                            !canAfford ? 'border-gray-600/50 bg-gray-800 opacity-60' :
+                                            'border-gray-600 bg-gray-800 hover:border-gray-500'
+                                        }">
+                                            <div class="flex items-start justify-between mb-2">
+                                                <div class="flex-1">
+                                                    <div class="text-sm font-semibold text-white">${feat.name}</div>
+                                                    <div class="text-xs text-gray-400 mt-1">${feat.description}</div>
+                                                    <div class="text-xs text-purple-400 mt-1">
+                                                        Cost: ${feat.cost} MP | ${feat.requirements}
+                                                    </div>
+                                                </div>
+                                                ${canPurchase && (feat.name.includes('Ability Score Increase') || feat.name.includes('Skill Proficiency') || feat.name.includes('Weapon Proficiency') || feat.name.includes('Tool Proficiency')) ? `
+                                                    <button data-purchase-feat-choice="${feat.name}" class="purchase-feat-choice-btn ml-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs">
+                                                        Choose & Buy
+                                                    </button>
+                                                ` : canPurchase ? `
+                                                    <button data-purchase-feat="${feat.name}" class="purchase-feat-btn ml-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs">
+                                                        Buy
+                                                    </button>
+                                                ` : alreadyPurchased ? `
+                                                    <span class="ml-2 px-3 py-1 bg-green-600 rounded text-xs">Purchased</span>
+                                                ` : !meetsReqs ? `
+                                                    <span class="ml-2 px-3 py-1 bg-red-900 rounded text-xs">Locked</span>
+                                                ` : `
+                                                    <span class="ml-2 px-3 py-1 bg-gray-700 rounded text-xs">Not Enough MP</span>
+                                                `}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                        
+                        <!-- Class-Specific Feats -->
+                        ${c.class ? `
+                            <div>
+                                <h4 class="text-sm font-semibold text-purple-400 mb-3">${c.class} Class Feats</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-96 overflow-y-auto">
+                                    ${(() => {
+                                        let classFeats = [];
+                                        if (c.class === 'Scout') {
+                                            classFeats = gameData.fieldHackFeats;
+                                        } else {
+                                            const featType = cd?.featChoices ? Object.values(cd.featChoices)[0]?.type : null;
+                                            if (featType && gameData.classFeatsByType[featType]) {
+                                                classFeats = gameData.classFeatsByType[featType];
+                                            }
+                                        }
+                                        
+                                        return classFeats.map(feat => {
+                                            const canAfford = availableMP >= feat.cost;
+                                            const meetsReqs = meetsFeatRequirements(feat);
+                                            const alreadyPurchased = c.purchasedFeats.includes(feat.name);
+                                            const canPurchase = canAfford && meetsReqs && !alreadyPurchased;
+                                            
+                                            return `
+                                                <div class="p-3 rounded border ${
+                                                    alreadyPurchased ? 'border-green-500 bg-green-500/10' :
+                                                    !meetsReqs ? 'border-red-600/50 bg-red-900/10 opacity-60' :
+                                                    !canAfford ? 'border-gray-600/50 bg-gray-800 opacity-60' :
+                                                    'border-gray-600 bg-gray-800 hover:border-gray-500'
+                                                }">
+                                                    <div class="flex items-start justify-between mb-2">
+                                                        <div class="flex-1">
+                                                            <div class="text-sm font-semibold text-white">${feat.name}</div>
+                                                            <div class="text-xs text-gray-400 mt-1">${feat.description}</div>
+                                                            <div class="text-xs text-purple-400 mt-1">
+                                                                Cost: ${feat.cost} MP${feat.requirements ? ` | ${feat.requirements}` : ''}
+                                                            </div>
+                                                        </div>
+                                                        ${canPurchase ? `
+                                                            <button data-purchase-feat="${feat.name}" class="purchase-feat-btn ml-2 px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded text-xs">
+                                                                Buy
+                                                            </button>
+                                                        ` : alreadyPurchased ? `
+                                                            <span class="ml-2 px-3 py-1 bg-green-600 rounded text-xs">Purchased</span>
+                                                        ` : !meetsReqs ? `
+                                                            <span class="ml-2 px-3 py-1 bg-red-900 rounded text-xs">Locked</span>
+                                                        ` : `
+                                                            <span class="ml-2 px-3 py-1 bg-gray-700 rounded text-xs">Not Enough MP</span>
+                                                        `}
+                                                    </div>
+                                                </div>
+                                            `;
+                                        }).join('');
+                                    })()}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `));
+            }
+            
+            // Class feats for levels 1-5 (keep original rendering)
+            if (cd?.featChoices && c.level <= 5) {
+                let req = 0, type = null;
+                Object.entries(cd.featChoices).forEach(([l, ch]) => {
+                    if (parseInt(l) <= c.level) {
+                        req += ch.count;
+                        type = ch.type;
+                    }
+                });
+                
+                if (req) {
+                    const feats = type === 'fieldHack' ? gameData.fieldHackFeats : gameData.classFeatsByType[type];
+                    sections.push(section('', `
+                        <div id="toggle-feats" class="flex items-center justify-between cursor-pointer">
+                            <h3 class="text-lg font-semibold text-gray-300 flex items-center gap-2">
+                                ${icons.sparkles} Class Feat Selection (Levels 1-5)
+                            </h3>
+                            <span class="${state.showClassFeats ? 'rotate-180' : ''} transition-transform">${icons.chevronDown}</span>
+                        </div>
+                        ${state.showClassFeats ? `
+                            <p class="text-sm text-gray-400 mb-4 mt-3">Select ${req} ${type === 'fieldHack' ? 'Field Hack' : type} feat${req > 1 ? 's' : ''}</p>
+                            <div class="space-y-2">
+                                ${feats.map(feat => {
+                                    const sel = c.classFeats.includes(feat.name);
+                                    const can = c.classFeats.length < req && !sel;
+                                    return `
+                                        <button data-feat="${feat.name}" class="feat-btn w-full text-left p-3 rounded border transition-all ${
+                                            sel ? 'border-purple-500 bg-purple-500/20' :
+                                            can ? 'border-gray-600 bg-gray-800 hover:border-gray-500' :
+                                            'border-gray-700 bg-gray-900/50 opacity-50 cursor-not-allowed'
+                                        }" ${!can && !sel ? 'disabled' : ''}>
+                                            <div class="flex justify-between items-start">
+                                                <div class="flex-1">
+                                                    <div class="font-semibold text-sm text-white">${feat.name}</div>
+                                                    <div class="text-xs text-gray-400 mt-1">${feat.description}</div>
+                                                </div>
+                                                ${sel ? '<div class="ml-2 text-purple-400">✓</div>' : ''}
+                                            </div>
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
+                            <div class="mt-4 text-sm text-gray-400">Selected: ${c.classFeats.length}/${req}</div>
+                        ` : ''}
+                    `));
+                }
+            }
+            
+            // Bonus Feats (Attack Specialist, Veteran, Ace)
+            if (c.bonusFeats.length > 0) {
+                sections.push(section('Bonus Feats (FREE - No MP Cost)', `
+                    <div class="space-y-4">
+                        ${c.bonusFeats.map(featName => {
+                            let choice = '';
+                            let choiceVar = '';
+                            if (featName === 'Attack Specialist') {
+                                choice = state.attackSpecialistChoice;
+                                choiceVar = 'attackSpecialistChoice';
+                            } else if (featName === 'Attack Veteran') {
+                                choice = state.attackVeteranChoice;
+                                choiceVar = 'attackVeteranChoice';
+                            } else if (featName === 'Attack Ace') {
+                                choice = state.attackAceChoice;
+                                choiceVar = 'attackAceChoice';
+                            }
+                            
+                            return `
+                                <div class="p-4 bg-yellow-900/20 border-2 border-yellow-500 rounded-lg">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="text-yellow-300">${icons.award}</span>
+                                        <h4 class="text-sm font-semibold text-yellow-300">${featName}</h4>
+                                    </div>
+                                    <p class="text-xs text-gray-300 mb-3">
+                                        Choose a weapon proficiency. When making attacks with that proficiency you roll ${
+                                            featName === 'Attack Specialist' ? 'twice' :
+                                            featName === 'Attack Veteran' ? 'triple' :
+                                            'quadruple'
+                                        } as many weapon damage dice for damage.
+                                    </p>
+                                    <select id="${choiceVar}" class="w-full px-4 py-2 bg-gray-800 border border-yellow-500 rounded-lg text-white">
+                                        <option value="">Select weapon type...</option>
+                                        ${gameData.weapons.map(w => `<option value="${w}" ${choice === w ? 'selected' : ''}>${w}</option>`).join('')}
+                                    </select>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `));
+            }
+            
+            // Level 4 ASI (keep original)
+            if (c.level >= 4) {
+                sections.push(section('Level 4 - Ability Score Improvement', `
+                    <p class="text-sm text-gray-400 mb-4">Choose either: +2 to one ability score, OR +1 to two different ability scores</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Option 1: +2 to one ability</label>
+                            <select id="asi-option1" class="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white">
+                                <option value="">Select ability...</option>
+                                ${['strength','dexterity','constitution','intelligence','wisdom','charisma'].map(a => 
+                                    `<option value="${a}_2" ${c.abilityScoreImprovements?.option1 === `${a}_2` ? 'selected' : ''}>${a[0].toUpperCase() + a.slice(1)} +2</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Option 2: +1 to two abilities</label>
+                            <div class="space-y-2">
+                                <select id="asi-option2a" class="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white">
+                                    <option value="">First ability +1...</option>
+                                    ${['strength','dexterity','constitution','intelligence','wisdom','charisma'].map(a => 
+                                        `<option value="${a}" ${c.abilityScoreImprovements?.option2a === a ? 'selected' : ''}>${a[0].toUpperCase() + a.slice(1)} +1</option>`
+                                    ).join('')}
+                                </select>
+                                <select id="asi-option2b" class="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white">
+                                    <option value="">Second ability +1...</option>
+                                    ${['strength','dexterity','constitution','intelligence','wisdom','charisma'].map(a => 
+                                        `<option value="${a}" ${c.abilityScoreImprovements?.option2b === a ? 'selected' : ''}>${a[0].toUpperCase() + a.slice(1)} +1</option>`
+                                    ).join('')}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `));
+            }
+            
+            // Ability scores (keep original)
+            sections.push(section('Ability Scores (Point Buy) - Base Values', `
+                <div class="flex justify-between mb-4">
+                    <span class="${ps > 27 ? 'text-red-300' : 'text-green-300'} text-sm">Points: ${ps}/27</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    ${Object.entries(c.abilityScores).map(([ability, score]) => {
+                        const {racial, origin, asi} = getAbilityBonuses(ability);
+                        const bonus = racial + origin + asi;
+                        const final = score + bonus;
+                        return `
+                            <div class="bg-gray-800 rounded-lg p-3">
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-xs text-gray-400 capitalize">${ability}</span>
+                                    <span class="text-xs text-blue-300">Final: ${final} (${getModifier(final) >= 0 ? '+' : ''}${getModifier(final)})</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button data-ability="${ability}" data-action="decrease" class="ability-btn w-8 h-8 bg-gray-700 rounded ${score <= 8 ? 'opacity-50' : 'hover:bg-gray-600'}" ${score <= 8 ? 'disabled' : ''}>-</button>
+                                    <div class="flex-1 text-center">
+                                        <div class="text-lg font-bold text-white">${score}</div>
+                                        ${bonus ? `<div class="text-xs text-green-400">+${bonus}</div>` : ''}
+                                    </div>
+                                    <button data-ability="${ability}" data-action="increase" class="ability-btn w-8 h-8 bg-gray-700 rounded ${score >= 15 || ps >= 27 ? 'opacity-50' : 'hover:bg-gray-600'}" ${score >= 15 || ps >= 27 ? 'disabled' : ''}>+</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `));
+            
+            // Combat stats (keep original)
+            sections.push(section('Combat Statistics', `
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    ${[
+                        ['Hit Points', c.hp, icons.heart, 'text-red-400'],
+                        ['Armor Class', c.armorClass, icons.shield, 'text-blue-400'],
+                        ['Initiative', `${c.initiative >= 0 ? '+' : ''}${c.initiative}`, icons.zap, 'text-yellow-400'],
+                        ['Determination', c.determinationPoints, icons.brain, 'text-purple-400'],
+                        ['Speed', `${c.speed}m`, icons.activity, 'text-green-400'],
+                        ['Moxie', `${c.moxie >= 0 ? '+' : ''}${c.moxie}`, icons.user, 'text-cyan-400']
+                    ].map(([label, value, icon, color]) => `
+                        <div class="bg-gray-800 rounded-lg p-3">
+                            <div class="flex items-center gap-2 ${color} mb-1">
+                                <span class="icon icon-md">${icon}</span>
+                                <span class="text-xs">${label}</span>
+                            </div>
+                            <div class="text-2xl font-bold text-white">${value || 0}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="mt-4 p-3 bg-gray-800 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-400">Proficiency Bonus</span>
+                        <span class="text-lg font-bold text-white">+${getProficiencyBonus(c.level)}</span>
+                    </div>
+                </div>
+            `));
+            
+            // Duplicate proficiencies (keep original)
+            if (totalReplacements > 0) {
+                sections.push(section('', `
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-yellow-300">${icons.sparkles}</span>
+                        <h3 class="text-lg font-semibold text-yellow-300">Duplicate Skill Proficiencies</h3>
+                    </div>
+                    
+                    <div class="p-3 bg-yellow-900/20 border border-yellow-600/50 rounded-lg mb-4">
+                        <p class="text-sm text-yellow-200">
+                            You have duplicate skill proficiencies from multiple sources:
+                        </p>
+                        <ul class="mt-2 text-xs text-yellow-100">
+                            ${duplicateSkills.map(({skill, duplicates}) => 
+                                `<li>• <strong>${skill}</strong> appears ${duplicates + 1} times (${duplicates} duplicate${duplicates > 1 ? 's' : ''})</li>`
+                            ).join('')}
+                        </ul>
+                        <p class="text-sm text-yellow-200 mt-3">
+                            <strong>Select ${totalReplacements} skill${totalReplacements > 1 ? 's' : ''} to replace the duplicate${totalReplacements > 1 ? 's' : ''}:</strong>
+                        </p>
+                        <p class="text-xs text-yellow-100 mt-1">
+                            Selected: ${c.duplicateProficiencyChoices.filter(s => s).length} / ${totalReplacements}
+                        </p>
+                    </div>
+                    
+                    <div class="p-3 bg-gray-800 rounded-lg">
+                        <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                            ${gameData.skills.map(skill => {
+                                const selectedIndex = c.duplicateProficiencyChoices.indexOf(skill);
+                                const isSelected = selectedIndex !== -1;
+                                const finalProfs = getFinalSkillProficiencies();
+                                const alreadyProficient = finalProfs.includes(skill) && !isSelected;
+                                const disabled = alreadyProficient;
+                                const canSelect = !disabled && !isSelected && c.duplicateProficiencyChoices.filter(s => s).length < totalReplacements;
+                                
+                                return `
+                                    <button 
+                                        data-duplicate-skill="${skill}" 
+                                        class="duplicate-btn p-2 rounded text-xs transition-all ${
+                                            isSelected ? 'bg-green-500/20 border-2 border-green-500 text-white font-semibold' :
+                                            disabled ? 'bg-gray-900 border border-gray-700 text-gray-600 opacity-50 cursor-not-allowed' :
+                                            canSelect ? 'bg-gray-800 border border-gray-600 text-gray-300 hover:border-gray-500' :
+                                            'bg-gray-800 border border-gray-600 text-gray-400 opacity-70'
+                                        }" 
+                                        ${disabled ? 'disabled' : ''}
+                                    >
+                                        ${skill}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 p-3 bg-gray-800/50 rounded">
+                        <div class="text-xs text-gray-300">
+                            <strong>Final Skill Proficiencies:</strong>
+                            <div class="mt-1 flex flex-wrap gap-1">
+                                ${getFinalSkillProficiencies().map(skill => `
+                                    <span class="px-2 py-1 bg-gray-700 rounded text-xs">${skill}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `, true));
+            }
+            
+            // Export button
+            sections.push(`
+                <div class="flex justify-end">
+                    <button id="export-btn" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 flex items-center gap-2">
+                        ${icons.download} Export Character Sheet
+                    </button>
+                </div>
+            `);
+            
+            return sections.join('');
+        };
+
+        // Event listeners
+        const attachEventListeners = () => {
+            const on = (sel, evt, fn) => document.querySelectorAll(sel).forEach(el => el.addEventListener(evt, fn));
+            
+            document.getElementById('character-name')?.addEventListener('input', e => state.character.name = e.target.value);
+            
+            on('.race-btn', 'click', e => {
+                state.character.race = e.currentTarget.dataset.race;
+                state.character.subrace = '';
+                state.character.abilityChoice = '';
+                state.character.raceChoices = {};
+                state.character.duplicateProficiencyChoices = [];
+                render();
+            });
+            
+            on('.subrace-btn', 'click', e => {
+                state.character.subrace = e.currentTarget.dataset.subrace;
+                state.character.abilityChoice = '';
+                state.character.raceChoices = {};
+                state.character.duplicateProficiencyChoices = [];
+                render();
+            });
+            
+            on('.ability-choice-btn', 'click', e => {
+                state.character.abilityChoice = e.currentTarget.dataset.abilityChoice;
+                render();
+            });
+            
+            on('.race-weapon-btn', 'click', e => {
+                const w = e.currentTarget.dataset.raceWeapon;
+                const weapons = state.character.raceChoices.weapons || [];
+                const max = getRaceData()?.proficiencies?.weapons?.count || 1;
+                
+                if (weapons.includes(w)) {
+                    state.character.raceChoices.weapons = weapons.filter(x => x !== w);
+                } else if (weapons.length < max) {
+                    state.character.raceChoices.weapons = [...weapons, w];
+                }
+                render();
+            });
+            
+            on('.race-skill-btn', 'click', e => {
+                const s = e.currentTarget.dataset.raceSkill;
+                const skills = state.character.raceChoices.skills || [];
+                const max = getRaceData()?.proficiencies?.skills?.count || 1;
+                
+                if (skills.includes(s)) {
+                    state.character.raceChoices.skills = skills.filter(x => x !== s);
+                } else if (skills.length < max) {
+                    state.character.raceChoices.skills = [...skills, s];
+                }
+                state.character.duplicateProficiencyChoices = [];
+                render();
+            });
+            
+            on('.additional-skill-btn', 'click', e => {
+                const s = e.currentTarget.dataset.additionalSkill;
+                const skills = state.character.raceChoices.additionalSkills || [];
+                const max = getRaceData()?.proficiencies?.skills?.additionalChoice?.count || 1;
+                
+                if (skills.includes(s)) {
+                    state.character.raceChoices.additionalSkills = skills.filter(x => x !== s);
+                } else if (skills.length < max) {
+                    state.character.raceChoices.additionalSkills = [...skills, s];
+                }
+                state.character.duplicateProficiencyChoices = [];
+                render();
+            });
+            
+            on('.origin-choice-btn', 'click', e => {
+                const originName = e.currentTarget.dataset.originChoice;
+                const choice = e.currentTarget.dataset.choice;
+                state.character.originChoices[originName] = choice;
+                render();
+            });
+            
+            on('.origin-btn', 'click', e => {
+                const name = e.currentTarget.dataset.origin;
+                const type = e.currentTarget.dataset.originType;
+                const c = state.character;
+                
+                if (name === 'Former Host' && c.race === 'Jaffa') return;
+                
+                if (type === 'racial') {
+                    const origin = gameData.origins.racial[c.race]?.find(o => o.name === name);
+                    if (origin && !isRacialOriginAvailable(origin)) return;
+                }
+                
+                const scrollPositions = {};
+                document.querySelectorAll('.max-h-96.overflow-y-auto').forEach((el, index) => {
+                    scrollPositions[index] = el.scrollTop;
+                });
+                
+                if (c.origins.includes(name)) {
+                    c.origins = c.origins.filter(o => o !== name);
+                    delete c.originChoices[name];
+                } else if (c.origins.length < 2) {
+                    const hasType = type === 'racial' ? 
+                        c.origins.some(o => gameData.origins.racial[c.race]?.find(x => x.name === o)) :
+                        c.origins.some(o => gameData.origins[type].find(x => x.name === o));
+                    if (!hasType) c.origins.push(name);
+                }
+                state.character.duplicateProficiencyChoices = [];
+                
+                document.getElementById('app').style.opacity = '0.99';
+                
+                render();
+                
+                requestAnimationFrame(() => {
+                    document.querySelectorAll('.max-h-96.overflow-y-auto').forEach((el, index) => {
+                        if (scrollPositions[index] !== undefined) {
+                            el.scrollTop = scrollPositions[index];
+                        }
+                    });
+                    document.getElementById('app').style.opacity = '1';
+                });
+            });
+            
+            on('.class-btn', 'click', e => {
+                state.character.class = e.currentTarget.dataset.class;
+                state.character.classFeats = [];
+                state.character.duplicateProficiencyChoices = [];
+                render();
+            });
+            
+            on('.level-btn', 'click', e => {
+                state.character.level = parseInt(e.currentTarget.dataset.level);
+                state.character.mpEarned = state.character.level * 5;
+                render();
+            });
+            
+            // MP adjustment
+            document.getElementById('mp-earned')?.addEventListener('change', e => {
+                state.character.mpEarned = Math.max(20, parseInt(e.target.value) || 20);
+                render();
+            });
+            
+            document.getElementById('mp-plus')?.addEventListener('click', () => {
+                state.character.mpEarned += 1;
+                render();
+            });
+            
+            document.getElementById('mp-minus')?.addEventListener('click', () => {
+                state.character.mpEarned = Math.max(20, state.character.mpEarned - 1);
+                render();
+            });
+            
+            // Feat purchase
+            document.getElementById('toggle-feat-purchase')?.addEventListener('click', () => {
+                state.showFeatPurchase = !state.showFeatPurchase;
+                render();
+            });
+            
+            on('.purchase-feat-btn', 'click', e => {
+                const featName = e.currentTarget.dataset.purchaseFeat;
+                let feat = gameData.generalFeats.find(f => f.name === featName);
+                if (!feat) {
+                    Object.values(gameData.classFeatsByType).forEach(typeFeats => {
+                        const found = typeFeats.find(f => f.name === featName);
+                        if (found) feat = found;
+                    });
+                }
+                if (!feat) feat = gameData.fieldHackFeats.find(f => f.name === featName);
+                
+                if (feat && purchaseFeat(feat)) {
+                    render();
+                }
+            });
+            
+            on('.purchase-feat-choice-btn', 'click', e => {
+                const featName = e.currentTarget.dataset.purchaseFeatChoice;
+                let choice = prompt(`Enter your choice for ${featName}:`);
+                if (choice) {
+                    let feat = gameData.generalFeats.find(f => f.name === featName);
+                    if (feat && purchaseFeat(feat, choice)) {
+                        render();
+                    }
+                }
+            });
+            
+            on('.refund-btn', 'click', e => {
+                const featName = e.currentTarget.dataset.refundFeat;
+                if (refundFeat(featName)) {
+                    render();
+                }
+            });
+            
+            on('.feat-btn', 'click', e => {
+                const feat = e.currentTarget.dataset.feat;
+                const c = state.character;
+                const cd = getClassData();
+                let max = 0;
+                
+                Object.entries(cd.featChoices || {}).forEach(([l, ch]) => {
+                    if (parseInt(l) <= c.level) max += ch.count;
+                });
+                
+                if (c.classFeats.includes(feat)) {
+                    c.classFeats = c.classFeats.filter(f => f !== feat);
+                } else if (c.classFeats.length < max) {
+                    c.classFeats.push(feat);
+                }
+                render();
+            });
+            
+            on('.duplicate-btn', 'click', e => {
+                if (e.currentTarget.disabled) return;
+                
+                const skill = e.currentTarget.dataset.duplicateSkill;
+                const { totalReplacements } = getDuplicateAnalysis();
+                
+                if (!Array.isArray(state.character.duplicateProficiencyChoices)) {
+                    state.character.duplicateProficiencyChoices = new Array(totalReplacements).fill('');
+                }
+                
+                const existingIndex = state.character.duplicateProficiencyChoices.indexOf(skill);
+                
+                if (existingIndex !== -1) {
+                    state.character.duplicateProficiencyChoices[existingIndex] = '';
+                } else {
+                    const emptyIndex = state.character.duplicateProficiencyChoices.indexOf('');
+                    if (emptyIndex !== -1) {
+                        state.character.duplicateProficiencyChoices[emptyIndex] = skill;
+                    }
+                }
+                
+                render();
+            });
+            
+            on('.ability-btn', 'click', e => {
+                const ability = e.currentTarget.dataset.ability;
+                const action = e.currentTarget.dataset.action;
+                const c = state.character;
+                const current = c.abilityScores[ability];
+                
+                if (action === 'increase' && current < 15) {
+                    const newCost = getPointsSpent() + (pointBuyCost[current + 1] - pointBuyCost[current]);
+                    if (newCost <= 27) c.abilityScores[ability]++;
+                } else if (action === 'decrease' && current > 8) {
+                    c.abilityScores[ability]--;
+                }
+                render();
+            });
+            
+            document.getElementById('toggle-feats')?.addEventListener('click', () => {
+                state.showClassFeats = !state.showClassFeats;
+                render();
+            });
+            
+            // Bonus feat choices
+            ['attackSpecialistChoice', 'attackVeteranChoice', 'attackAceChoice'].forEach(choiceVar => {
+                document.getElementById(choiceVar)?.addEventListener('change', e => {
+                    state[choiceVar] = e.target.value;
+                });
+            });
+            
+            document.getElementById('asi-option1')?.addEventListener('change', e => {
+                if (e.target.value) {
+                    state.character.abilityScoreImprovements = {option1: e.target.value};
+                    render();
+                }
+            });
+            
+            document.getElementById('asi-option2a')?.addEventListener('change', e => {
+                if (e.target.value) {
+                    state.character.abilityScoreImprovements = {
+                        option2a: e.target.value,
+                        option2b: state.character.abilityScoreImprovements?.option2b || ''
+                    };
+                    render();
+                }
+            });
+            
+            document.getElementById('asi-option2b')?.addEventListener('change', e => {
+                if (e.target.value) {
+                    state.character.abilityScoreImprovements = {
+                        option2a: state.character.abilityScoreImprovements?.option2a || '',
+                        option2b: e.target.value
+                    };
+                    render();
+                }
+            });
+            
+            document.getElementById('export-btn')?.addEventListener('click', exportCharacter);
+        };
+
+        // Initialize
+        render();
+    </script>
+</body>
+</html>
